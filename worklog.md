@@ -162,3 +162,24 @@ Stage Summary:
 - No console errors or lint issues.
 - Design meets all aesthetic requirements per VLM analysis (9/10).
 - Project is production-ready and fully functional.
+
+---
+Task ID: 5 (schema refactor)
+Agent: Orchestrator
+Task: Adopt the rigorous ATS JSON schema (nested contact/experience_summary/ats_evaluation + linkedin/latest_company/verdict)
+
+Work Log:
+- Rewrote src/lib/types.ts: new `AnalysisResult` mirrors the exact requested JSON schema (candidate_name, contact{email,phone,linkedin}, top_skills[max 10], experience_summary{total_years,latest_role,latest_company}, ats_evaluation{match_score,verdict,key_strengths,missing_skills_or_gaps,brief_summary}). Added `Verdict` type ('Strong Shortlist'|'Potential Review'|'Reject') and `verdictToStatus()` helper. Updated flat `Candidate` type: added linkedin, latestCompany, verdict; renamed skills→topSkills, currentRole→latestRole, strengths→keyStrengths, missingSkills (now from missing_skills_or_gaps), summary→briefSummary; removed matchedSkills/weaknesses. CreateCandidateRequest now extends the new AnalysisResult.
+- Rewrote src/lib/ai.ts: new SYSTEM_PROMPT enforces the exact nested JSON schema (no markdown, critical 0-100 scoring, verdict rules). `ensureValidResult()` now parses nested contact/experience_summary/ats_evaluation objects, coerces verdict to canonical value, derives verdict from score if inconsistent, caps top_skills at 10.
+- Updated prisma/schema.prisma: added `linkedin`, `latestCompany`, `verdict` columns; renamed skills→topSkills, currentRole→latestRole, strengths→keyStrengths, missingSkills (kept name), summary→briefSummary; changed experienceYears to Float; removed matchedSkills/weaknesses. Ran `prisma db push --force-reset` (DB reset, Prisma client regenerated).
+- Rewrote src/lib/mappers.ts: `toCandidate()` maps new DB columns to flat Candidate type, normalizes verdict string, derives status from verdict if missing.
+- Rewrote src/app/api/candidates/route.ts POST: flattens nested AnalysisResult (candidate_name→name, contact.{email,phone,linkedin}, top_skills→topSkills, experience_summary.{total_years,latest_role,latest_company}, ats_evaluation.{match_score→matchScore, verdict, key_strengths→keyStrengths, missing_skills_or_gaps→missingSkills, brief_summary→briefSummary}) into DB columns; derives initial status from verdict.
+- Updated src/components/ats/CandidateTable.tsx: skills→topSkills, currentRole→latestRole (now shows "Role · Company" inline).
+- Updated src/components/ats/CandidateDetail.tsx: summary→briefSummary, matchedSkills→topSkills (relabeled "Candidate Skills"), strengths→keyStrengths (relabeled "Key Strengths"), removed weaknesses (replaced with "Gaps & Concerns" using missingSkills, neon red); added LinkedIn display (clickable link) in header + Contact section; added latestCompany to metadata; added VerdictPill component in AI Verdict section showing the verdict with tone-colored styling; BulletList now supports 'red' tone.
+- Verified page.tsx needs no changes (spreads ...result into CreateCandidateRequest; toast uses candidate.name/matchScore/status which still exist).
+
+Stage Summary:
+- AI now returns the EXACT requested schema: {candidate_name, contact{email,phone,linkedin}, top_skills, experience_summary{total_years,latest_role,latest_company}, ats_evaluation{match_score,verdict,key_strengths,missing_skills_or_gaps,brief_summary}}.
+- Lint clean, dev server clean, no console errors.
+- Agent Browser verified: uploaded sample resume → Sarah Chen scored 95%, verdict "Strong Shortlist", 10 top skills, 0 gaps, 7 key strengths. Detail view shows verdict pill, LinkedIn field, company, and all new metadata. Analytics view renders correctly.
+- All 6 todos complete.

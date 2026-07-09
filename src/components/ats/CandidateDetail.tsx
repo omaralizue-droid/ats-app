@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   Mail,
   Phone,
+  Linkedin,
   Briefcase,
   Clock,
   FileText,
@@ -15,6 +16,7 @@ import {
   ShieldCheck,
   XCircle,
   ThumbsUp,
+  Building2,
 } from 'lucide-react'
 import {
   Sheet,
@@ -92,6 +94,31 @@ function formatDate(iso: string): string {
   }
 }
 
+function VerdictPill({ verdict }: { verdict: string }) {
+  const v = (verdict ?? '').toLowerCase()
+  let color = '#FFB340'
+  let bg = 'rgba(255,179,64,0.12)'
+  let border = 'rgba(255,179,64,0.4)'
+  if (v.includes('shortlist') || v.includes('strong')) {
+    color = '#00FF66'
+    bg = 'rgba(0,255,102,0.12)'
+    border = 'rgba(0,255,102,0.4)'
+  } else if (v.includes('reject')) {
+    color = '#FF2D55'
+    bg = 'rgba(255,45,85,0.12)'
+    border = 'rgba(255,45,85,0.4)'
+  }
+  return (
+    <span
+      className="ml-auto flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+      style={{ color, background: bg, border: `1px solid ${border}` }}
+    >
+      <ShieldCheck className="h-3 w-3" style={{ color }} />
+      {verdict}
+    </span>
+  )
+}
+
 export function CandidateDetail({
   candidate,
   open,
@@ -125,7 +152,7 @@ function CandidateDetailBody({
   candidate: Candidate
   onStatusChange: (id: string, status: CandidateStatus) => void
 }) {
-  const matchedSkills = useMemo(() => candidate.matchedSkills ?? [], [candidate.matchedSkills])
+  const topSkills = useMemo(() => candidate.topSkills ?? [], [candidate.topSkills])
   const missingSkills = useMemo(() => candidate.missingSkills ?? [], [candidate.missingSkills])
 
   return (
@@ -160,18 +187,31 @@ function CandidateDetailBody({
               </SheetTitle>
               <SheetDescription asChild>
                 <div className="flex flex-col gap-0.5 text-xs">
-                  <span className="flex items-center gap-1.5 text-muted-foreground">
-                    <Mail className="h-3 w-3" /> {candidate.email}
-                  </span>
-                  {candidate.currentRole && (
+                  {candidate.email && (
                     <span className="flex items-center gap-1.5 text-muted-foreground">
-                      <Briefcase className="h-3 w-3" /> {candidate.currentRole}
+                      <Mail className="h-3 w-3" /> {candidate.email}
+                    </span>
+                  )}
+                  {candidate.latestRole && (
+                    <span className="flex items-center gap-1.5 text-muted-foreground">
+                      <Briefcase className="h-3 w-3" /> {candidate.latestRole}
+                      {candidate.latestCompany ? ` · ${candidate.latestCompany}` : ''}
                     </span>
                   )}
                   {candidate.experienceYears != null && (
                     <span className="flex items-center gap-1.5 text-muted-foreground">
                       <Clock className="h-3 w-3" /> {candidate.experienceYears} yr experience
                     </span>
+                  )}
+                  {candidate.linkedin && (
+                    <a
+                      href={candidate.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-[#00F0FF] hover:underline"
+                    >
+                      <Linkedin className="h-3 w-3" /> {candidate.linkedin.replace(/^https?:\/\/(www\.)?/, '')}
+                    </a>
                   )}
                 </div>
               </SheetDescription>
@@ -238,9 +278,10 @@ function CandidateDetailBody({
                   AI
                 </span>
                 <span className="text-[11px] text-muted-foreground">Automated assessment</span>
+                <VerdictPill verdict={candidate.verdict} />
               </div>
               <p className="text-sm leading-relaxed text-foreground/90">
-                {candidate.summary || 'No summary available.'}
+                {candidate.briefSummary || 'No summary available.'}
               </p>
             </div>
           </Section>
@@ -248,22 +289,22 @@ function CandidateDetailBody({
           {/* Skills overview */}
           <Section title="Skills Overview" icon={<ShieldCheck className="h-4 w-4 text-[#00F0FF]" />}>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {/* Matched */}
+              {/* Candidate skills (top_skills) */}
               <div className="rounded-xl border border-[rgba(0,255,102,0.2)] bg-[rgba(0,255,102,0.04)] p-3">
                 <div className="mb-2 flex items-center gap-1.5">
                   <Check className="h-3.5 w-3.5 text-[#00FF66]" />
                   <span className="text-xs font-semibold uppercase tracking-wider text-[#00FF66]">
-                    Matched
+                    Candidate Skills
                   </span>
                   <span className="ml-auto text-[10px] text-muted-foreground">
-                    {matchedSkills.length}
+                    {topSkills.length}
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {matchedSkills.length === 0 ? (
-                    <span className="text-[11px] text-muted-foreground">None matched</span>
+                  {topSkills.length === 0 ? (
+                    <span className="text-[11px] text-muted-foreground">No skills listed</span>
                   ) : (
-                    matchedSkills.map((s) => (
+                    topSkills.map((s) => (
                       <span
                         key={s}
                         className="rounded-md border border-[rgba(0,255,102,0.35)] bg-[rgba(0,255,102,0.08)] px-1.5 py-0.5 text-[11px] font-medium text-[#00FF66]"
@@ -274,12 +315,12 @@ function CandidateDetailBody({
                   )}
                 </div>
               </div>
-              {/* Missing — MUST be neon red */}
+              {/* Missing / Gaps — MUST be neon red */}
               <div className="rounded-xl border border-[rgba(255,45,85,0.25)] bg-[rgba(255,45,85,0.04)] p-3">
                 <div className="mb-2 flex items-center gap-1.5">
                   <AlertTriangle className="h-3.5 w-3.5 text-[#FF2D55]" />
                   <span className="text-xs font-semibold uppercase tracking-wider text-[#FF2D55]">
-                    Missing
+                    Missing / Gaps
                   </span>
                   <span className="ml-auto text-[10px] text-muted-foreground">
                     {missingSkills.length}
@@ -304,35 +345,47 @@ function CandidateDetailBody({
             </div>
           </Section>
 
-          {/* Strengths */}
-          <Section title="Strengths" icon={<Check className="h-4 w-4 text-[#00FF66]" />}>
+          {/* Key strengths */}
+          <Section title="Key Strengths" icon={<Check className="h-4 w-4 text-[#00FF66]" />}>
             <BulletList
-              items={candidate.strengths}
+              items={candidate.keyStrengths}
               tone="green"
               emptyText="No strengths highlighted"
             />
           </Section>
 
-          {/* Weaknesses / Gaps */}
+          {/* Missing skills / Gaps detail */}
           <Section
-            title="Weaknesses / Gaps"
+            title="Gaps & Concerns"
             icon={<AlertTriangle className="h-4 w-4 text-[#FFB340]" />}
           >
-            <BulletList
-              items={candidate.weaknesses}
-              tone="amber"
-              emptyText="No notable gaps"
-            />
+            {candidate.missingSkills.length > 0 ? (
+              <BulletList
+                items={candidate.missingSkills}
+                tone="red"
+                emptyText="No notable gaps"
+              />
+            ) : (
+              <div className="rounded-xl border border-[rgba(0,255,102,0.2)] bg-[rgba(0,255,102,0.04)] p-4 text-center text-xs text-[#00FF66]">
+                No notable gaps — the candidate meets the JD requirements.
+              </div>
+            )}
           </Section>
 
           {/* Contact */}
           <Section title="Contact" icon={<Mail className="h-4 w-4 text-[#00F0FF]" />}>
             <div className="grid grid-cols-1 gap-2 rounded-xl border border-white/10 bg-black/20 p-4 sm:grid-cols-2">
-              <ContactRow icon={<Mail className="h-3.5 w-3.5" />} label="Email" value={candidate.email} />
+              <ContactRow icon={<Mail className="h-3.5 w-3.5" />} label="Email" value={candidate.email ?? '—'} />
               <ContactRow
                 icon={<Phone className="h-3.5 w-3.5" />}
                 label="Phone"
                 value={candidate.phone ?? '—'}
+              />
+              <ContactRow
+                icon={<Linkedin className="h-3.5 w-3.5" />}
+                label="LinkedIn"
+                value={candidate.linkedin ?? '—'}
+                href={candidate.linkedin ?? undefined}
               />
             </div>
           </Section>
@@ -345,13 +398,23 @@ function CandidateDetailBody({
             <div className="grid grid-cols-2 gap-2 rounded-xl border border-white/10 bg-black/20 p-4">
               <MetaRow
                 icon={<Briefcase className="h-3.5 w-3.5" />}
-                label="Current role"
-                value={candidate.currentRole ?? '—'}
+                label="Latest role"
+                value={candidate.latestRole ?? '—'}
+              />
+              <MetaRow
+                icon={<Building2 className="h-3.5 w-3.5" />}
+                label="Company"
+                value={candidate.latestCompany ?? '—'}
               />
               <MetaRow
                 icon={<Clock className="h-3.5 w-3.5" />}
                 label="Experience"
                 value={candidate.experienceYears != null ? `${candidate.experienceYears} years` : '—'}
+              />
+              <MetaRow
+                icon={<Sparkles className="h-3.5 w-3.5" />}
+                label="AI verdict"
+                value={candidate.verdict}
               />
               <MetaRow
                 icon={<FileText className="h-3.5 w-3.5" />}
@@ -412,10 +475,10 @@ function BulletList({
   emptyText,
 }: {
   items: string[]
-  tone: 'green' | 'amber'
+  tone: 'green' | 'amber' | 'red'
   emptyText: string
 }) {
-  const color = tone === 'green' ? '#00FF66' : '#FFB340'
+  const color = tone === 'green' ? '#00FF66' : tone === 'red' ? '#FF2D55' : '#FFB340'
   const Icon = tone === 'green' ? Check : AlertTriangle
   if (!items || items.length === 0) {
     return (
@@ -449,10 +512,12 @@ function ContactRow({
   icon,
   label,
   value,
+  href,
 }: {
   icon: React.ReactNode
   label: string
   value: string
+  href?: string
 }) {
   return (
     <div className="flex flex-col gap-1">
@@ -460,7 +525,15 @@ function ContactRow({
         {icon}
         {label}
       </span>
-      <span className="truncate text-sm text-foreground">{value}</span>
+      {href ? (
+        <a href={href} target="_blank" rel="noopener noreferrer" className="truncate text-sm text-[#00F0FF] hover:underline" title={value}>
+          {value}
+        </a>
+      ) : (
+        <span className="truncate text-sm text-foreground" title={value}>
+          {value}
+        </span>
+      )}
     </div>
   )
 }

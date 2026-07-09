@@ -175,8 +175,8 @@ function CandidateRow({
 }) {
   const meta = STATUS_META[candidate.status]
   const StatusIcon = meta.icon
-  const visibleSkills = candidate.skills.slice(0, 4)
-  const extraCount = candidate.skills.length - visibleSkills.length
+  const visibleSkills = candidate.topSkills.slice(0, 4)
+  const extraCount = candidate.topSkills.length - visibleSkills.length
 
   return (
     <motion.tr
@@ -222,10 +222,13 @@ function CandidateRow({
               <Mail className="h-3 w-3" />
               <span className="max-w-[200px] truncate">{candidate.email}</span>
             </span>
-            {candidate.currentRole && (
+            {candidate.latestRole && (
               <span className="flex items-center gap-1 text-[11px] text-muted-foreground/80">
                 <Briefcase className="h-3 w-3" />
-                <span className="max-w-[200px] truncate">{candidate.currentRole}</span>
+                <span className="max-w-[200px] truncate">
+                  {candidate.latestRole}
+                  {candidate.latestCompany ? ` · ${candidate.latestCompany}` : ''}
+                </span>
               </span>
             )}
           </div>
@@ -251,7 +254,7 @@ function CandidateRow({
               +{extraCount} more
             </span>
           )}
-          {candidate.skills.length === 0 && (
+          {candidate.topSkills.length === 0 && (
             <span className="text-[11px] text-muted-foreground">No skills</span>
           )}
         </div>
@@ -294,8 +297,8 @@ function CandidateCardMobile({
   onSelectCandidate: (c: Candidate) => void
   onStatusChange: (id: string, status: CandidateStatus) => void
 }) {
-  const visibleSkills = candidate.skills.slice(0, 4)
-  const extraCount = candidate.skills.length - visibleSkills.length
+  const visibleSkills = candidate.topSkills.slice(0, 4)
+  const extraCount = candidate.topSkills.length - visibleSkills.length
 
   return (
     <motion.div
@@ -325,9 +328,10 @@ function CandidateCardMobile({
               {candidate.name}
             </span>
             <span className="truncate text-[11px] text-muted-foreground">{candidate.email}</span>
-            {candidate.currentRole && (
+            {candidate.latestRole && (
               <span className="truncate text-[11px] text-muted-foreground/80">
-                {candidate.currentRole}
+                {candidate.latestRole}
+                {candidate.latestCompany ? ` · ${candidate.latestCompany}` : ''}
               </span>
             )}
           </div>

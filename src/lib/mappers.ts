@@ -1,4 +1,5 @@
-import type { Candidate, CandidateStatus, ParsedSkill } from '@/lib/types';
+import type { Candidate, CandidateStatus, Verdict } from '@/lib/types';
+import { verdictToStatus } from '@/lib/types';
 
 /**
  * Raw shape of a Candidate row as returned by Prisma (SQLite).
@@ -9,17 +10,18 @@ interface CandidateRow {
   name: string;
   email: string;
   phone: string | null;
+  linkedin: string | null;
   fileName: string;
   matchScore: number;
   status: string;
-  skills: string;
-  matchedSkills: string;
-  missingSkills: string;
-  strengths: string;
-  weaknesses: string;
-  summary: string;
+  verdict: string;
+  topSkills: string;
+  latestRole: string | null;
+  latestCompany: string | null;
   experienceYears: number | null;
-  currentRole: string | null;
+  keyStrengths: string;
+  missingSkills: string;
+  briefSummary: string;
   jdText: string;
   rawText: string | null;
   createdAt: Date;
@@ -37,38 +39,44 @@ function safeParseArray<T = string>(value: unknown): T[] {
   }
 }
 
+function normalizeVerdict(v: string | null | undefined): Verdict {
+  const s = (v ?? '').trim().toLowerCase();
+  if (s.includes('strong') || s.includes('shortlist')) return 'Strong Shortlist';
+  if (s.includes('reject')) return 'Reject';
+  return 'Potential Review';
+}
+
 /**
  * Convert a Prisma Candidate row (with JSON-stringified array fields and a
- * Date `createdAt`) into the `Candidate` type expected by the frontend.
- *
- * NOTE: The `skills` field in the DB stores a `ParsedSkill[]` array, but the
- * frontend `Candidate.skills` is typed as `string[]` (just skill names). We
- * handle both shapes gracefully: if we detect ParsedSkill objects we extract
- * their `.name` values.
+ * Date `createdAt`) into the flat `Candidate` type expected by the frontend.
  */
 export function toCandidate(row: CandidateRow): Candidate {
-  const rawSkills = safeParseArray<ParsedSkill | string>(row.skills);
-  const skills: string[] = rawSkills.map((s) =>
-    typeof s === 'string' ? s : (s?.name ?? String(s)),
-  );
+  const verdict = normalizeVerdict(row.verdict);
+  const status: CandidateStatus =
+    (row.status as CandidateStatus) ?? verdictToStatus(verdict);
 
   return {
     id: row.id,
     name: row.name,
     email: row.email,
     phone: row.phone ?? null,
+    linkedin: row.linkedin ?? null,
     fileName: row.fileName,
     matchScore: row.matchScore,
-    status: (row.status as CandidateStatus) ?? 'REVIEW',
-    skills,
-    matchedSkills: safeParseArray<string>(row.matchedSkills),
+    status,
+    verdict,
+    topSkills: safeParseArray<string>(row.topSkills),
+    latestRole: row.latestRole ?? null,
+    latestCompany: row.latestCompany ?? null,
+    experienceYears:
+      row.experienceYears == null ? null : Number(row.experienceYears),
+    keyStrengths: safeParseArray<string>(row.keyStrengths),
     missingSkills: safeParseArray<string>(row.missingSkills),
-    strengths: safeParseArray<string>(row.strengths),
-    weaknesses: safeParseArray<string>(row.weaknesses),
-    summary: row.summary,
-    experienceYears: row.experienceYears ?? null,
-    currentRole: row.currentRole ?? null,
+    briefSummary: row.briefSummary,
     jdText: row.jdText,
-    createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : new Date(row.createdAt).toISOString(),
+    createdAt:
+      row.createdAt instanceof Date
+        ? row.createdAt.toISOString()
+        : new Date(row.createdAt).toISOString(),
   };
 }

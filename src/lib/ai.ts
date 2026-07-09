@@ -1,87 +1,61 @@
 import ZAI from 'z-ai-web-dev-sdk';
-import type { AnalysisResult, CandidateStatus, ParsedSkill } from '@/lib/types';
+import type { AnalysisResult, Verdict } from '@/lib/types';
 
-const SYSTEM_PROMPT = `You are an expert technical recruiter and Applicant Tracking System (ATS) parser with 15+ years of experience screening engineering, product, and design candidates. You have deep knowledge of modern tech stacks, role seniority markers, and what hiring managers actually care about.
+const SYSTEM_PROMPT = `You are an expert ATS (Applicant Tracking System) algorithm and senior technical recruiter with 15+ years of experience screening engineering, product, and design candidates.
 
-Your job: given a candidate's resume (plain text) and a job description, produce a rigorous, realistic evaluation.
+Your task: analyze the provided Resume Text against the target Job Description (JD) and extract structured data alongside a rigorous ATS match evaluation.
 
-You MUST follow these rules:
+CRITICAL INSTRUCTIONS:
+1. You must respond ONLY with a raw, valid JSON object. Do not include markdown formatting like \`\`\`json ... \`\`\`, and do not include any introductory or concluding text.
+2. Evaluate the match score critically (0-100%). Be realistic; do not give inflated scores unless the candidate truly matches the core technical requirements.
+   - 90-100: exceptional, near-perfect match
+   - 75-89: strong match, clearly qualified
+   - 50-74: partial fit, has gaps
+   - 25-49: weak fit, significant gaps
+   - 0-24: poor fit
+3. The verdict must be exactly one of: "Strong Shortlist" (score >= 75), "Potential Review" (50-74), or "Reject" (< 50).
+4. Be strict but fair with missing_skills_or_gaps — only list technologies/requirements that are actually in the JD but absent or weak in the resume. Do not invent requirements.
+5. top_skills: maximum 10 core technical or professional skills found in the resume. Normalize spellings (e.g. "React.js" -> "React", "Node.JS" -> "Node.js").
+6. brief_summary: a 2-sentence crisp, high-impact review summarizing the candidate's fit for an HR executive.
 
-1. PARSE CONTACT INFO
-   - Extract the candidate's full name. If you truly cannot determine it, use "Unknown Candidate".
-   - Extract the primary email address. If none, use "".
-   - Extract the primary phone number (digits, +, spaces, dashes, parentheses ok). If none, use "".
-
-2. EXTRACT SKILLS
-   - Identify ALL technical and professional skills mentioned ANYWHERE in the resume (technologies, languages, frameworks, tools, methodologies, platforms, soft skills relevant to the role).
-   - Normalize skill names (e.g. "React.js" -> "React", "Node.JS" -> "Node.js", "PostgreSQL" -> "Postgres"). Use canonical, widely-recognized spellings.
-   - Each skill is an object { "name": string, "matched": boolean }. "matched" is true if that skill is explicitly required OR clearly implied by the job description.
-
-3. COMPARE AGAINST THE JOB DESCRIPTION
-   - matchedSkills: skills that appear in BOTH the resume and the job description's requirements.
-   - missingSkills: skills required/implied by the job description that are NOT in the resume.
-   - Be strict but fair — don't invent missing skills that aren't actually in the JD.
-
-4. COMPUTE matchScore (integer 0-100)
-   - Base it on: skill overlap (most important), experience relevance, seniority alignment, and keyword density.
-   - Do NOT default to 70-80. Be honest:
-     * 90-100: exceptional, near-perfect match
-     * 75-89: strong match, clearly qualified
-     * 50-74: partial fit, has gaps
-     * 25-49: weak fit, significant gaps
-     * 0-24: poor fit
-   - Apply critical judgment. If the candidate is clearly missing multiple core required skills, the score should reflect that.
-
-5. recommendation (one of "SHORTLIST", "REVIEW", "REJECT")
-   - SHORTLIST if matchScore >= 75
-   - REVIEW if 50 <= matchScore <= 74
-   - REJECT if matchScore < 50
-
-6. strengths: 3-5 bullet strings. Concrete positives relative to the JD (e.g. "5+ years of React experience exceeds the 3-year requirement").
-
-7. weaknesses: 3-5 bullet strings. Concrete gaps or concerns relative to the JD (e.g. "No mention of AWS, which is listed as a required skill").
-
-8. experienceYears: integer. Best estimate of total relevant professional experience based on dates, roles, and any stated totals. 0 if undeterminable.
-
-9. currentRole: the candidate's most recent / current job title. null/empty string if unknown.
-
-10. summary: a concise 2-3 sentence verdict explaining the recommendation. Mention the matchScore, key strengths, and main gaps. Direct and professional — no fluff.
-
-OUTPUT FORMAT — STRICT JSON ONLY:
-Return EXACTLY one JSON object with these keys and NOTHING else. No markdown fences, no prose before or after, no comments:
+OUTPUT FORMAT — return EXACTLY this JSON structure and NOTHING else:
 {
-  "name": string,
-  "email": string,
-  "phone": string,
-  "matchScore": number,
-  "skills": [{ "name": string, "matched": boolean }],
-  "matchedSkills": string[],
-  "missingSkills": string[],
-  "strengths": string[],
-  "weaknesses": string[],
-  "experienceYears": number,
-  "currentRole": string,
-  "summary": string,
-  "recommendation": "SHORTLIST" | "REVIEW" | "REJECT"
-}
+  "candidate_name": "Extract full name, capitalize properly. Use 'Unknown' if missing.",
+  "contact": {
+    "email": "String or null",
+    "phone": "String or null",
+    "linkedin": "Full URL or null"
+  },
+  "top_skills": ["Array of maximum 10 core technical or professional skills found in the resume"],
+  "experience_summary": {
+    "total_years": 0.0,
+    "latest_role": "Job title",
+    "latest_company": "Company name"
+  },
+  "ats_evaluation": {
+    "match_score": 0,
+    "verdict": "Choose exactly one: 'Strong Shortlist', 'Potential Review', or 'Reject'",
+    "key_strengths": ["Array of 3-4 bullet points detailing why they fit the JD"],
+    "missing_skills_or_gaps": ["Array of key technologies or requirements mentioned in the JD but absent/weak in the resume"],
+    "brief_summary": "A 2-sentence crisp high-impact review summarizing the candidate's fit for an HR executive."
+  }
+}`;
 
-CRITICAL: Output the JSON object and absolutely nothing else.`;
-
-const USER_PROMPT_TEMPLATE = (resumeText: string, jobDescription: string) => `Please analyze the following resume against the job description and return the JSON evaluation as specified.
+const USER_PROMPT_TEMPLATE = (resumeText: string, jobDescription: string) => `Analyze the following resume against the job description and return the JSON evaluation as specified.
 
 === JOB DESCRIPTION ===
 ${jobDescription}
 
-=== RESUME ===
+=== RESUME TEXT ===
 ${resumeText}
 
 === END ===
 
-Return the STRICT JSON object now.`;
+Return the raw JSON object now. No markdown, no prose.`;
 
 /**
  * Strip surrounding markdown code fences (```json ... ``` or ``` ... ```)
- * and any leading/trailing whitespace/non-JSON noise so we can JSON.parse it.
+ * and any leading/trailing non-JSON noise so we can JSON.parse it.
  */
 function extractJson(raw: string): string {
   let text = raw.trim();
@@ -98,72 +72,117 @@ function extractJson(raw: string): string {
   return text.trim();
 }
 
+const VALID_VERDICTS: Verdict[] = [
+  'Strong Shortlist',
+  'Potential Review',
+  'Reject',
+];
+
+function str(v: unknown, fallback = ''): string {
+  if (typeof v === 'string') return v;
+  if (v == null) return fallback;
+  return String(v);
+}
+
+function nullableStr(v: unknown): string | null {
+  if (typeof v === 'string' && v.trim().length > 0) return v.trim();
+  return null;
+}
+
+function num(v: unknown, fallback = 0): number {
+  const n = typeof v === 'number' ? v : parseFloat(String(v ?? ''));
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function strArr(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .map((x) => (typeof x === 'string' ? x : String(x)))
+    .filter((s) => s.trim().length > 0);
+}
+
+/**
+ * Validate and normalize the parsed JSON into a strict AnalysisResult.
+ * Tolerant of minor shape deviations from the LLM but always returns a
+ * well-formed object.
+ */
 function ensureValidResult(parsed: unknown): AnalysisResult {
   if (!parsed || typeof parsed !== 'object') {
     throw new Error('AI response was not a JSON object.');
   }
   const obj = parsed as Record<string, unknown>;
 
-  const str = (v: unknown, fallback = ''): string =>
-    typeof v === 'string' ? v : v == null ? fallback : String(v);
+  const contactRaw =
+    (obj.contact as Record<string, unknown> | undefined) ?? {};
+  const expRaw =
+    (obj.experience_summary as Record<string, unknown> | undefined) ?? {};
+  const atsRaw =
+    (obj.ats_evaluation as Record<string, unknown> | undefined) ?? {};
 
-  const num = (v: unknown, fallback = 0): number => {
-    const n = typeof v === 'number' ? v : parseInt(String(v ?? ''), 10);
-    return Number.isFinite(n) ? n : fallback;
-  };
+  // Verdict — coerce to one of the three canonical values.
+  let verdict: Verdict = 'Potential Review';
+  const verdictRaw = str(atsRaw.verdict).trim();
+  const verdictLower = verdictRaw.toLowerCase();
+  if (verdictLower.includes('strong') || verdictLower.includes('shortlist')) {
+    verdict = 'Strong Shortlist';
+  } else if (verdictLower.includes('reject')) {
+    verdict = 'Reject';
+  } else if (
+    VALID_VERDICTS.includes(verdictRaw as Verdict) ||
+    verdictLower.includes('review')
+  ) {
+    verdict = 'Potential Review';
+  }
 
-  const strArr = (v: unknown): string[] =>
-    Array.isArray(v)
-      ? v.map((x) => (typeof x === 'string' ? x : String(x))).filter(Boolean)
-      : [];
+  // matchScore clamped 0-100, rounded to integer.
+  const matchScore = Math.max(
+    0,
+    Math.min(100, Math.round(num(atsRaw.match_score, 0))),
+  );
 
-  const skillsArr = (v: unknown): ParsedSkill[] => {
-    if (!Array.isArray(v)) return [];
-    return v
-      .map((item) => {
-        if (typeof item === 'string') {
-          return { name: item, matched: false } satisfies ParsedSkill;
-        }
-        if (item && typeof item === 'object') {
-          const o = item as Record<string, unknown>;
-          return {
-            name: str(o.name),
-            matched: Boolean(o.matched),
-          } satisfies ParsedSkill;
-        }
-        return null;
-      })
-      .filter((s): s is ParsedSkill => s !== null && s.name.length > 0);
-  };
+  // Derive verdict from score if the LLM gave an inconsistent verdict.
+  let finalVerdict = verdict;
+  if (matchScore >= 75 && verdict === 'Reject') finalVerdict = 'Strong Shortlist';
+  else if (matchScore < 50 && verdict === 'Strong Shortlist') finalVerdict = 'Reject';
+  else if (matchScore >= 50 && matchScore < 75 && verdict === 'Strong Shortlist')
+    finalVerdict = 'Potential Review';
+  else if (matchScore >= 75 && verdict === 'Potential Review')
+    finalVerdict = 'Strong Shortlist';
 
-  const recRaw = str(obj.recommendation, 'REVIEW').toUpperCase();
-  const validRec: CandidateStatus[] = ['SHORTLIST', 'REVIEW', 'REJECT'];
-  const recommendation: CandidateStatus = validRec.includes(recRaw as CandidateStatus)
-    ? (recRaw as CandidateStatus)
-    : 'REVIEW';
+  // top_skills — cap at 10.
+  const topSkills = strArr(obj.top_skills).slice(0, 10);
 
-  const matchScore = Math.max(0, Math.min(100, num(obj.matchScore, 0)));
+  const totalYears = num(expRaw.total_years, 0);
 
   return {
-    name: str(obj.name, 'Unknown Candidate'),
-    email: str(obj.email),
-    phone: str(obj.phone),
-    matchScore,
-    skills: skillsArr(obj.skills),
-    matchedSkills: strArr(obj.matchedSkills),
-    missingSkills: strArr(obj.missingSkills),
-    strengths: strArr(obj.strengths),
-    weaknesses: strArr(obj.weaknesses),
-    experienceYears: num(obj.experienceYears, 0),
-    currentRole: str(obj.currentRole),
-    summary: str(obj.summary, 'No summary provided.'),
-    recommendation,
+    candidate_name: str(obj.candidate_name, 'Unknown'),
+    contact: {
+      email: nullableStr(contactRaw.email),
+      phone: nullableStr(contactRaw.phone),
+      linkedin: nullableStr(contactRaw.linkedin),
+    },
+    top_skills: topSkills,
+    experience_summary: {
+      total_years: totalYears,
+      latest_role: str(expRaw.latest_role, ''),
+      latest_company: str(expRaw.latest_company, ''),
+    },
+    ats_evaluation: {
+      match_score: matchScore,
+      verdict: finalVerdict,
+      key_strengths: strArr(atsRaw.key_strengths),
+      missing_skills_or_gaps: strArr(atsRaw.missing_skills_or_gaps),
+      brief_summary: str(
+        atsRaw.brief_summary,
+        'No summary available.',
+      ),
+    },
   };
 }
 
 /**
  * Analyze a resume against a job description using the ZAI LLM.
- * Returns a strictly-validated AnalysisResult.
+ * Returns a strictly-validated AnalysisResult matching the rigorous ATS schema.
  * Throws Error with a clear message if the LLM call or JSON parse fails.
  */
 export async function analyzeResume(

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { toCandidate } from '@/lib/mappers';
-import type { CandidateStatus, CreateCandidateRequest } from '@/lib/types';
+import { verdictToStatus } from '@/lib/types';
+import type { CreateCandidateRequest } from '@/lib/types';
 
-const VALID_STATUSES: CandidateStatus[] = ['REVIEW', 'SHORTLIST', 'REJECT'];
+const VALID_STATUSES = ['REVIEW', 'SHORTLIST', 'REJECT'];
 
 /**
  * GET /api/candidates
@@ -25,7 +26,8 @@ export async function GET() {
 
 /**
  * POST /api/candidates
- * Body: CreateCandidateRequest (AnalysisResult + fileName + jdText + rawText)
+ * Body: CreateCandidateRequest (the nested AnalysisResult + fileName + jdText + rawText)
+ * Flattens the nested AI schema into DB columns and persists the candidate.
  * Returns { candidate: Candidate } with status 201.
  */
 export async function POST(req: NextRequest) {
@@ -41,77 +43,104 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate required scalar fields.
-    const requiredFields: (keyof CreateCandidateRequest)[] = [
-      'name',
-      'email',
-      'matchScore',
-      'summary',
-      'fileName',
-      'jdText',
-    ];
-    for (const key of requiredFields) {
-      const v = body[key];
-      if (v === undefined || v === null || v === '') {
-        return NextResponse.json(
-          { error: `Missing required field: ${String(key)}` },
-          { status: 400 },
-        );
-      }
+    const candidateName = body.candidate_name;
+    if (!candidateName || typeof candidateName !== 'string') {
+      return NextResponse.json(
+        { error: 'Missing required field: candidate_name' },
+        { status: 400 },
+      );
     }
-
     if (
       typeof body.matchScore !== 'number' ||
       body.matchScore < 0 ||
       body.matchScore > 100
     ) {
+      // matchScore lives inside ats_evaluation — validate there.
+    }
+
+    const contact = body.contact ?? {};
+    const experience = body.experience_summary ?? {};
+    const ats = body.ats_evaluation ?? {};
+
+    const matchScore = typeof ats.match_score === 'number'
+      ? Math.max(0, Math.min(100, Math.round(ats.match_score)))
+      : null;
+    if (matchScore === null) {
       return NextResponse.json(
-        { error: 'matchScore must be a number between 0 and 100.' },
+        { error: 'ats_evaluation.match_score must be a number between 0 and 100.' },
         { status: 400 },
       );
     }
 
-    // Normalize recommendation -> initial status (fall back to REVIEW).
-    const rec = (typeof body.recommendation === 'string'
-      ? body.recommendation.toUpperCase()
-      : 'REVIEW') as CandidateStatus;
-    const initialStatus: CandidateStatus = VALID_STATUSES.includes(rec)
-      ? rec
-      : 'REVIEW';
+    if (!body.fileName || typeof body.fileName !== 'string') {
+      return NextResponse.json(
+        { error: 'Missing required field: fileName' },
+        { status: 400 },
+      );
+    }
+    if (!body.jdText || typeof body.jdText !== 'string') {
+      return NextResponse.json(
+        { error: 'Missing required field: jdText' },
+        { status: 400 },
+      );
+    }
+    if (!ats.brief_summary || typeof ats.brief_summary !== 'string') {
+      return NextResponse.json(
+        { error: 'Missing required field: ats_evaluation.brief_summary' },
+        { status: 400 },
+      );
+    }
 
     // Normalize arrays with safe fallbacks.
-    const skills = Array.isArray(body.skills) ? body.skills : [];
-    const matchedSkills = Array.isArray(body.matchedSkills)
-      ? body.matchedSkills
+    const topSkills = Array.isArray(body.top_skills) ? body.top_skills.slice(0, 10) : [];
+    const keyStrengths = Array.isArray(ats.key_strengths) ? ats.key_strengths : [];
+    const missingSkills = Array.isArray(ats.missing_skills_or_gaps)
+      ? ats.missing_skills_or_gaps
       : [];
-    const missingSkills = Array.isArray(body.missingSkills)
-      ? body.missingSkills
-      : [];
-    const strengths = Array.isArray(body.strengths) ? body.strengths : [];
-    const weaknesses = Array.isArray(body.weaknesses) ? body.weaknesses : [];
+
+    // Derive verdict + initial pipeline status.
+    const verdictStr = typeof ats.verdict === 'string' ? ats.verdict : 'Potential Review';
+    const initialStatus = VALID_STATUSES.includes(
+      verdictToStatus(verdictStr),
+    )
+      ? verdictToStatus(verdictStr)
+      : 'REVIEW';
+
+    const email = typeof contact.email === 'string' && contact.email ? contact.email : '';
 
     const created = await db.candidate.create({
       data: {
-        name: String(body.name),
-        email: String(body.email),
-        phone: typeof body.phone === 'string' && body.phone ? body.phone : null,
+        name: String(candidateName),
+        email,
+        phone:
+          typeof contact.phone === 'string' && contact.phone
+            ? contact.phone
+            : null,
+        linkedin:
+          typeof contact.linkedin === 'string' && contact.linkedin
+            ? contact.linkedin
+            : null,
         fileName: String(body.fileName),
-        matchScore: Math.round(body.matchScore),
+        matchScore,
         status: initialStatus,
-        skills: JSON.stringify(skills),
-        matchedSkills: JSON.stringify(matchedSkills),
-        missingSkills: JSON.stringify(missingSkills),
-        strengths: JSON.stringify(strengths),
-        weaknesses: JSON.stringify(weaknesses),
-        summary: String(body.summary),
+        verdict: verdictStr,
+        topSkills: JSON.stringify(topSkills),
+        latestRole:
+          typeof experience.latest_role === 'string' && experience.latest_role
+            ? experience.latest_role
+            : null,
+        latestCompany:
+          typeof experience.latest_company === 'string' &&
+          experience.latest_company
+            ? experience.latest_company
+            : null,
         experienceYears:
-          typeof body.experienceYears === 'number'
-            ? Math.round(body.experienceYears)
+          typeof experience.total_years === 'number' && Number.isFinite(experience.total_years)
+            ? experience.total_years
             : null,
-        currentRole:
-          typeof body.currentRole === 'string' && body.currentRole
-            ? body.currentRole
-            : null,
+        keyStrengths: JSON.stringify(keyStrengths),
+        missingSkills: JSON.stringify(missingSkills),
+        briefSummary: String(ats.brief_summary),
         jdText: String(body.jdText),
         rawText:
           typeof body.rawText === 'string' && body.rawText ? body.rawText : null,

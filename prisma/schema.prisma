@@ -15,17 +15,18 @@ model Candidate {
   name            String
   email           String
   phone           String?
+  linkedin        String?
   fileName        String
   matchScore      Int
   status          String   @default("REVIEW")
-  skills          String
-  matchedSkills   String
+  verdict         String   @default("Potential Review")
+  topSkills       String
+  latestRole      String?
+  latestCompany   String?
+  experienceYears Float?
+  keyStrengths    String
   missingSkills   String
-  strengths       String
-  weaknesses      String
-  summary         String
-  experienceYears Int?
-  currentRole     String?
+  briefSummary    String
   jdText          String
   rawText         String?
   createdAt       DateTime @default(now())
