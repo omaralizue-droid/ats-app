@@ -112,7 +112,7 @@ export default function Home() {
 
   // ---- Handlers ----
   const handleFileUploaded = useCallback(
-    async (data: { fileName: string; resumeText: string }) => {
+    async (data: { fileName: string; file: File }) => {
       if (jdText.trim().length < 60) {
         toast({
           title: 'Job description required',
@@ -125,21 +125,21 @@ export default function Home() {
 
       setAnalyzing(true)
       try {
-        // Step 1 — AI analysis
+        // Step 1 — AI analysis (server parses the PDF/DOCX/TXT file)
+        const formData = new FormData()
+        formData.append('file', data.file)
+        formData.append('jobDescription', jdText)
+        formData.append('fileName', data.fileName)
+
         const analyzeRes = await fetch('/api/analyze', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            resumeText: data.resumeText,
-            jobDescription: jdText,
-            fileName: data.fileName,
-          }),
+          body: formData,
         })
         if (!analyzeRes.ok) {
           const err = await analyzeRes.json().catch(() => ({}))
           throw new Error(err.error || 'AI analysis failed.')
         }
-        const { result } = await analyzeRes.json()
+        const { result, extractedText } = await analyzeRes.json()
 
         // Step 2 — persist candidate
         const createRes = await fetch('/api/candidates', {
@@ -149,7 +149,7 @@ export default function Home() {
             ...result,
             fileName: data.fileName,
             jdText,
-            rawText: data.resumeText,
+            rawText: extractedText,
           }),
         })
         if (!createRes.ok) {
@@ -163,7 +163,7 @@ export default function Home() {
         )
         toast({
           title: 'Resume analyzed',
-          description: `${candidate.name} scored ${candidate.matchScore}% — ${candidate.status.toLowerCase()}.`,
+          description: `${candidate.name} scored ${candidate.matchScore}% — ${candidate.verdict}.`,
         })
       } catch (err) {
         toast({

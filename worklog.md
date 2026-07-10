@@ -183,3 +183,36 @@ Stage Summary:
 - Lint clean, dev server clean, no console errors.
 - Agent Browser verified: uploaded sample resume → Sarah Chen scored 95%, verdict "Strong Shortlist", 10 top skills, 0 gaps, 7 key strengths. Detail view shows verdict pill, LinkedIn field, company, and all new metadata. Analytics view renders correctly.
 - All 6 todos complete.
+
+---
+Task ID: 6 (document upload)
+Agent: Orchestrator
+Task: Make upload ready for real PDF and Word (.docx) files with perfect text extraction
+
+Work Log:
+- Installed `unpdf` (v1.6.2, built on pdfjs-dist, serverless-friendly) for PDF parsing and `mammoth` (v1.12.0) for DOCX parsing.
+- Created `src/lib/parse-document.ts` with `parseFileToText(file: File): Promise<ParsedDocument>`:
+  - .pdf → unpdf `getDocumentProxy` + `extractText` (multi-page, mergePages)
+  - .docx → mammoth `extractRawText({ buffer })` (Node Buffer)
+  - .doc → best-effort binary string extraction with clear error if too little text
+  - .txt → UTF-8 decode
+  - Validates: extension allowlist, non-empty, ≤15MB, extracted text ≥30 chars
+  - Friendly error messages: scanned PDFs, corrupted files, unsupported types, password-protected
+  - Whitespace normalization (collapses runs, normalizes newlines)
+- Rewrote `src/app/api/analyze/route.ts` to accept `multipart/form-data` (file + jobDescription). Parses the uploaded document server-side via parseFileToText, runs analyzeResume, returns `{ result, extractedText, fileName }`.
+- Updated `src/components/ats/UploadZone.tsx`: callback now passes the raw `File` object instead of reading text client-side. Removed the `file.text()` call.
+- Updated `src/app/page.tsx` `handleFileUploaded`: builds FormData with the File + jobDescription, POSTs to /api/analyze (no JSON content-type header — FormData sets its own boundary). Uses returned `extractedText` as rawText for /api/candidates.
+- Fixed mammoth API bug: it requires `{ buffer: Buffer }` not `{ arrayBuffer }` — converted `Buffer.from(arrayBuffer)` in parseDocx.
+
+Verification (Agent Browser, 3 file formats):
+- .txt (Sarah Chen) → 95% Strong Shortlist ✓
+- .pdf (Marcus Johnson, Full Stack Developer) → 65% Potential Review ✓ (PDF text extracted correctly via unpdf)
+- .docx (Emily Rodriguez, Data Scientist) → 5% Reject ✓ (DOCX text extracted correctly via mammoth; LinkedIn link parsed and displayed as clickable; 8 missing skills identified; rigorous non-inflated scoring confirmed)
+- Console: completely clean, no errors/warnings.
+- Lint: clean.
+
+Stage Summary:
+- Upload now supports real PDF and Word (.docx) files with perfect text extraction on the server.
+- The frontend sends the raw binary File via FormData; the backend parses it to text before AI analysis.
+- Error handling covers scanned PDFs, corrupted/empty files, unsupported types, and oversized uploads with actionable messages.
+- All three formats (.txt, .pdf, .docx) verified end-to-end with realistic, non-inflated AI scoring.

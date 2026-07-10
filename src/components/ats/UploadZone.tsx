@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
 
 export interface UploadZoneProps {
-  onFileUploaded: (data: { fileName: string; resumeText: string }) => void
+  onFileUploaded: (data: { fileName: string; file: File }) => void
   disabled?: boolean
   className?: string
 }
@@ -63,15 +63,7 @@ export function UploadZone({ onFileUploaded, disabled = false, className }: Uplo
       }
       requestAnimationFrame(tick)
 
-      // Read text in parallel
-      let resumeText = ''
-      try {
-        resumeText = await file.text()
-      } catch {
-        resumeText = ''
-      }
-
-      // Ensure the animation has time to play
+      // Ensure the animation has time to play before handing off
       const elapsed = Date.now() - startedAt
       if (elapsed < duration) {
         await new Promise((r) => setTimeout(r, duration - elapsed))
@@ -79,9 +71,9 @@ export function UploadZone({ onFileUploaded, disabled = false, className }: Uplo
       setProgress(100)
 
       setState('done')
-      // Brief "done" flash before handing off
+      // Brief "done" flash before handing off the raw File to the parent
       setTimeout(() => {
-        onFileUploaded({ fileName: file.name, resumeText })
+        onFileUploaded({ fileName: file.name, file })
         // Reset to idle after a moment so the user can upload another file
         setTimeout(() => {
           setState('idle')
