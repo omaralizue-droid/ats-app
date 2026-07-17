@@ -3,479 +3,425 @@
 import { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
-import {
-  ArrowRight,
-  Sparkles,
-  Radar,
-  Zap,
-  Brain,
-  BarChart3,
-  ShieldCheck,
-  UploadCloud,
-  ChevronDown,
-  CheckCircle2,
-  Star,
-  Globe,
-  Github,
-  Twitter,
-} from 'lucide-react'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import { ArrowUpRight, Radar, Zap, ChevronDown } from 'lucide-react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const HeroScene = dynamic(() => import('@/components/three/HeroScene'), {
-  ssr: false,
-  loading: () => (
-    <div className="flex h-full w-full items-center justify-center">
-      <div className="h-2 w-32 overflow-hidden rounded-full bg-white/5">
-        <div className="h-full animate-shimmer w-1/2 rounded-full bg-gradient-to-r from-transparent via-[#00cfff]/30 to-transparent" />
+// Dynamically loaded — no SSR (WebGL requires browser APIs)
+const CinematicScene = dynamic(
+  () => import('@/components/three/CinematicScene'),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="flex h-full w-full items-center justify-center"
+        style={{ background: '#030412' }}
+      >
+        <div className="h-[1px] w-24 overflow-hidden bg-white/10">
+          <div
+            className="h-full animate-[shimmer_1.6s_ease-in-out_infinite]"
+            style={{
+              background: 'linear-gradient(90deg, transparent, rgba(100,160,255,0.4), transparent)',
+              backgroundSize: '200% 100%',
+            }}
+          />
+        </div>
       </div>
-    </div>
-  ),
-})
-
-// ── Magnetic button ──────────────────────────────────────────────────────────
-function MagneticBtn({
-  children,
-  href,
-  variant = 'primary',
-  className = '',
-}: {
-  children: React.ReactNode
-  href: string
-  variant?: 'primary' | 'ghost'
-  className?: string
-}) {
-  const ref = useRef<HTMLAnchorElement>(null)
-  const [pos, setPos] = useState({ x: 0, y: 0 })
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const rect = ref.current?.getBoundingClientRect()
-    if (!rect) return
-    const cx = rect.left + rect.width / 2
-    const cy = rect.top + rect.height / 2
-    setPos({ x: (e.clientX - cx) * 0.35, y: (e.clientY - cy) * 0.35 })
+    ),
   }
+)
 
-  const handleMouseLeave = () => setPos({ x: 0, y: 0 })
-
-  const base =
-    'group relative inline-flex items-center gap-2.5 overflow-hidden rounded-2xl px-7 py-3.5 text-sm font-semibold transition-all duration-300'
-  const styles =
-    variant === 'primary'
-      ? 'bg-gradient-to-r from-[#00cfff] to-[#7c3aed] text-black shadow-[0_0_30px_rgba(0,207,255,0.35)] hover:shadow-[0_0_50px_rgba(0,207,255,0.55)] hover:scale-[1.03]'
-      : 'border border-white/10 bg-white/[0.04] text-white/80 hover:border-white/20 hover:bg-white/[0.08] hover:text-white'
-
-  return (
-    <motion.a
-      ref={ref}
-      href={href}
-      animate={{ x: pos.x, y: pos.y }}
-      transition={{ type: 'spring', stiffness: 220, damping: 18 }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      className={`${base} ${styles} ${className}`}
-    >
-      {children}
-      {variant === 'primary' && (
-        <span className="absolute inset-0 -z-10 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-[100%]" />
-      )}
-    </motion.a>
-  )
-}
-
-// ── Navbar ────────────────────────────────────────────────────────────────────
-function Navbar() {
-  const [scrolled, setScrolled] = useState(false)
-  const navRef = useRef<HTMLElement>(null)
+// ── Cursor energy trail (canvas 2D overlay) ──────────────────────────────────
+function CursorTrail() {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
 
-  useEffect(() => {
-    if (navRef.current) {
-      gsap.fromTo(navRef.current,
-        { y: -80, opacity: 0 },
-        { y: 0, opacity: 1, duration: 1.2, ease: 'power4.out', delay: 0.3 }
-      )
+    let width  = window.innerWidth
+    let height = window.innerHeight
+    canvas.width  = width
+    canvas.height = height
+
+    const points: { x: number; y: number; age: number }[] = []
+    const MAX_POINTS = 32
+    let raf: number
+
+    const onMove = (e: MouseEvent) => {
+      points.push({ x: e.clientX, y: e.clientY, age: 0 })
+      if (points.length > MAX_POINTS) points.shift()
+    }
+
+    const onResize = () => {
+      width  = window.innerWidth
+      height = window.innerHeight
+      canvas.width  = width
+      canvas.height = height
+    }
+
+    window.addEventListener('mousemove', onMove, { passive: true })
+    window.addEventListener('resize', onResize, { passive: true })
+
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height)
+
+      for (let i = 1; i < points.length; i++) {
+        const p    = points[i]
+        const prev = points[i - 1]
+        p.age     += 1
+        const lifeRatio = 1 - p.age / MAX_POINTS
+        const alpha     = lifeRatio * 0.28
+
+        ctx.beginPath()
+        ctx.moveTo(prev.x, prev.y)
+        ctx.lineTo(p.x, p.y)
+        ctx.strokeStyle = `rgba(80, 160, 255, ${alpha})`
+        ctx.lineWidth   = lifeRatio * 2.5
+        ctx.lineCap     = 'round'
+        ctx.shadowColor = 'rgba(60, 140, 255, 0.5)'
+        ctx.shadowBlur  = 8
+        ctx.stroke()
+      }
+
+      // Remove old points
+      while (points.length && points[0].age > MAX_POINTS) points.shift()
+      raf = requestAnimationFrame(draw)
+    }
+
+    draw()
+
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('resize', onResize)
     }
   }, [])
 
   return (
-    <nav
-      ref={navRef}
-      className={`fixed top-0 z-50 w-full transition-all duration-500 ${
-        scrolled
-          ? 'border-b border-white/[0.06] bg-[#050508]/80 backdrop-blur-2xl'
-          : 'bg-transparent'
-      }`}
-    >
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 md:px-10">
-        {/* Logo */}
-        <div className="flex items-center gap-3">
-          <div
-            className="relative flex h-9 w-9 items-center justify-center rounded-xl"
-            style={{
-              background: 'linear-gradient(135deg, rgba(0,207,255,0.15), rgba(124,58,237,0.15))',
-              border: '1px solid rgba(0,207,255,0.3)',
-              boxShadow: '0 0 24px rgba(0,207,255,0.2)',
-            }}
-          >
-            <Radar className="h-4.5 w-4.5 text-[#00cfff]" />
-          </div>
-          <span
-            className="text-lg font-bold tracking-tight"
-            style={{
-              background: 'linear-gradient(90deg, #00cfff, #a78bfa)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            NeonATS
-          </span>
-        </div>
-
-        {/* Nav links */}
-        <div className="hidden items-center gap-8 md:flex">
-          {['Features', 'How It Works', 'Pricing'].map((item) => (
-            <a
-              key={item}
-              href={`#${item.toLowerCase().replace(/ /g, '-')}`}
-              className="text-sm font-medium text-white/50 transition-colors hover:text-white"
-            >
-              {item}
-            </a>
-          ))}
-        </div>
-
-        {/* CTA */}
-        <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard"
-            className="hidden text-sm font-medium text-white/50 transition-colors hover:text-white sm:block"
-          >
-            Sign in
-          </Link>
-          <MagneticBtn href="/dashboard" variant="primary">
-            Launch App <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-          </MagneticBtn>
-        </div>
-      </div>
-    </nav>
+    <canvas
+      ref={canvasRef}
+      className="pointer-events-none fixed inset-0 z-[5]"
+      style={{ mixBlendMode: 'screen' }}
+    />
   )
 }
 
-// ── Hero ──────────────────────────────────────────────────────────────────────
-function HeroSection() {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const textRef = useRef<HTMLDivElement>(null)
-  const { scrollY } = useScroll()
-  const y = useTransform(scrollY, [0, 500], [0, -120])
-  const opacity = useTransform(scrollY, [0, 400], [1, 0])
-  const sceneY = useTransform(scrollY, [0, 600], [0, 80])
+// ── Magnetic button with ripple ──────────────────────────────────────────────
+function CinematicButton({
+  children,
+  href,
+  variant = 'primary',
+}: {
+  children: React.ReactNode
+  href: string
+  variant?: 'primary' | 'outline'
+}) {
+  const ref     = useRef<HTMLAnchorElement>(null)
+  const ripples = useRef<{ x: number; y: number; id: number }[]>([])
+  const [, forceUpdate] = useState(0)
 
-  useEffect(() => {
-    if (!textRef.current) return
-    const els = textRef.current.querySelectorAll('[data-reveal]')
-    gsap.fromTo(els,
-      { y: 60, opacity: 0 },
-      {
-        y: 0, opacity: 1, duration: 1.1, stagger: 0.12,
-        ease: 'power4.out', delay: 0.5,
-      }
-    )
-  }, [])
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const el = ref.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const x = e.clientX - rect.left - rect.width  / 2
+    const y = e.clientY - rect.top  - rect.height / 2
+    el.style.transform = `translate(${x * 0.28}px, ${y * 0.28}px)`
+  }
+
+  const handleMouseLeave = () => {
+    if (ref.current) {
+      gsap.to(ref.current, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1,0.5)', clearProps: 'transform' })
+    }
+  }
+
+  const handleClick = (e: React.MouseEvent) => {
+    const el = ref.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const id   = Date.now()
+    ripples.current.push({ x: e.clientX - rect.left, y: e.clientY - rect.top, id })
+    forceUpdate(n => n + 1)
+    setTimeout(() => {
+      ripples.current = ripples.current.filter(r => r.id !== id)
+      forceUpdate(n => n + 1)
+    }, 800)
+  }
+
+  const base =
+    'group relative inline-flex items-center gap-3 overflow-hidden rounded-full text-sm font-medium tracking-wide transition-all duration-500 select-none'
+
+  const styles =
+    variant === 'primary'
+      ? 'border border-white/20 bg-white/[0.06] px-8 py-4 text-white hover:border-white/40 hover:bg-white/[0.1]'
+      : 'border border-white/10 bg-transparent px-7 py-3.5 text-white/50 hover:text-white/80'
 
   return (
-    <section
-      ref={containerRef}
-      className="relative flex min-h-screen items-center justify-center overflow-hidden"
+    <a
+      ref={ref}
+      href={href}
+      className={`${base} ${styles}`}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      onClick={handleClick}
+      style={{ willChange: 'transform' }}
     >
-      {/* Three.js canvas */}
-      <motion.div
-        style={{ y: sceneY }}
-        className="absolute inset-0 z-0"
-      >
-        <HeroScene />
-      </motion.div>
+      {/* Ripple effects */}
+      {ripples.current.map(r => (
+        <span
+          key={r.id}
+          className="pointer-events-none absolute rounded-full bg-white/20"
+          style={{
+            left: r.x - 4,
+            top:  r.y - 4,
+            width: 8,
+            height: 8,
+            animation: 'rippleExpand 0.8s ease-out forwards',
+          }}
+        />
+      ))}
 
-      {/* Dark vignette radial overlay */}
-      <div
-        className="pointer-events-none absolute inset-0 z-[1]"
-        style={{
-          background:
-            'radial-gradient(ellipse 70% 60% at 50% 50%, transparent 0%, #050508 70%)',
-        }}
-      />
+      {/* Shimmer sweep on hover */}
+      <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/8 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
 
-      {/* Text content */}
-      <motion.div
-        ref={textRef}
-        style={{ y, opacity }}
-        className="relative z-10 mx-auto max-w-5xl px-6 pb-24 pt-32 text-center"
-      >
-        {/* Badge */}
-        <div data-reveal className="mb-8 inline-flex items-center gap-2 rounded-full border border-[rgba(0,207,255,0.25)] bg-[rgba(0,207,255,0.06)] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#00cfff]">
-          <Sparkles className="h-3 w-3" />
-          AI-Powered Resume Intelligence
-          <Sparkles className="h-3 w-3" />
-        </div>
-
-        {/* Headline */}
-        <h1
-          data-reveal
-          className="mb-6 text-5xl font-black leading-[1.05] tracking-[-0.03em] sm:text-7xl lg:text-8xl"
-        >
-          Screen Talent at{' '}
-          <span
-            style={{
-              background: 'linear-gradient(135deg, #00cfff 0%, #7c3aed 50%, #00cfff 100%)',
-              backgroundSize: '200% auto',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              animation: 'gradientShift 4s linear infinite',
-            }}
-          >
-            Warp Speed
-          </span>
-        </h1>
-
-        {/* Subtitle */}
-        <p
-          data-reveal
-          className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-white/50 sm:text-xl"
-        >
-          Drop a resume. Paste a JD. Get an AI-powered ATS match score, skill gaps,
-          and hiring recommendation — in under 20 seconds.
-        </p>
-
-        {/* CTAs */}
-        <div data-reveal className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <MagneticBtn href="/dashboard" variant="primary" className="text-base px-8 py-4">
-            <Zap className="h-4 w-4" />
-            Start Screening Free
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-          </MagneticBtn>
-          <MagneticBtn href="#features" variant="ghost" className="text-base px-8 py-4">
-            See How It Works
-          </MagneticBtn>
-        </div>
-
-        {/* Social proof */}
-        <div data-reveal className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-white/30">
-          {['No credit card', 'Works on PDF, DOCX, TXT', 'Results in &lt;20s'].map((t) => (
-            <span key={t} className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-[#00cfff]" />
-              <span dangerouslySetInnerHTML={{ __html: t }} />
-            </span>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Scroll hint */}
-      <motion.div
-        className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2"
-        animate={{ y: [0, 8, 0] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        <ChevronDown className="h-5 w-5 text-white/20" />
-      </motion.div>
-    </section>
+      {children}
+    </a>
   )
 }
 
-// ── Stat ticker ───────────────────────────────────────────────────────────────
-function LogoStripSection() {
-  const stats = [
-    { value: '10x', label: 'Faster screening' },
-    { value: '95%', label: 'Accuracy rate' },
-    { value: '< 20s', label: 'Per resume' },
-    { value: '3 formats', label: 'PDF · DOCX · TXT' },
-    { value: '0 setup', label: 'Just paste & drop' },
-  ]
-
-  return (
-    <section className="relative z-10 border-y border-white/[0.06] bg-[#050508]/60 py-6 backdrop-blur-sm">
-      <div className="mx-auto flex max-w-7xl items-center justify-around gap-8 px-6 flex-wrap">
-        {stats.map((s) => (
-          <div key={s.value} className="text-center">
-            <p
-              className="text-2xl font-black"
-              style={{
-                background: 'linear-gradient(90deg, #00cfff, #a78bfa)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              {s.value}
-            </p>
-            <p className="mt-0.5 text-xs text-white/35">{s.label}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-// ── Feature cards ─────────────────────────────────────────────────────────────
-const FEATURES = [
-  {
-    icon: Brain,
-    title: 'AI Match Scoring',
-    desc: 'Weighted scoring rubric: 50% technical skills, 35% experience, 15% domain fit. Non-inflated, realistic scores every time.',
-    color: '#00cfff',
-  },
-  {
-    icon: UploadCloud,
-    title: 'Multi-Format Upload',
-    desc: 'Drop PDF, DOCX, or TXT resumes. Server-side text extraction means no data leaves without your consent.',
-    color: '#7c3aed',
-  },
-  {
-    icon: BarChart3,
-    title: 'Pipeline Analytics',
-    desc: 'Score distribution charts, status breakdowns, and hiring funnel metrics — all in real time.',
-    color: '#00cfff',
-  },
-  {
-    icon: Zap,
-    title: 'Under 20 Seconds',
-    desc: 'From upload to full AI evaluation in under 20 seconds. No waiting, no bottlenecks.',
-    color: '#7c3aed',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Rigorous & Fair',
-    desc: 'Skills gaps are verified against the JD — the AI never fabricates requirements. Transparent and auditable.',
-    color: '#00cfff',
-  },
-  {
-    icon: Globe,
-    title: 'Deploy Anywhere',
-    desc: 'Fully open-source, runs on Vercel + Neon Postgres. Your data, your infrastructure.',
-    color: '#7c3aed',
-  },
-]
-
-function FeaturesSection() {
+// ── Section reveal wrapper ────────────────────────────────────────────────────
+function Reveal({
+  children,
+  delay = 0,
+  className = '',
+}: {
+  children: React.ReactNode
+  delay?: number
+  className?: string
+}) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!ref.current) return
-    const cards = ref.current.querySelectorAll('[data-card]')
-    gsap.fromTo(cards,
-      { y: 60, opacity: 0 },
+    gsap.fromTo(
+      ref.current,
+      { opacity: 0, y: 48 },
       {
-        y: 0, opacity: 1, stagger: 0.1, duration: 0.9, ease: 'power4.out',
-        scrollTrigger: { trigger: ref.current, start: 'top 80%' },
+        opacity: 1, y: 0,
+        duration: 1.1,
+        delay,
+        ease: 'power4.out',
+        scrollTrigger: {
+          trigger: ref.current,
+          start: 'top 85%',
+        },
       }
+    )
+  }, [delay])
+
+  return (
+    <div ref={ref} className={className} style={{ opacity: 0 }}>
+      {children}
+    </div>
+  )
+}
+
+// ── Horizontal rule — elegant separator ──────────────────────────────────────
+function Rule() {
+  return (
+    <div className="mx-auto my-24 h-px w-full max-w-4xl bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+  )
+}
+
+// ── Hero ──────────────────────────────────────────────────────────────────────
+function HeroSection({ isMobile }: { isMobile: boolean }) {
+  const headRef  = useRef<HTMLHeadingElement>(null)
+  const subRef   = useRef<HTMLParagraphElement>(null)
+  const ctaRef   = useRef<HTMLDivElement>(null)
+  const { scrollY } = useScroll()
+
+  const heroY   = useTransform(scrollY, [0, 600], [0, -160])
+  const heroOp  = useTransform(scrollY, [0, 500], [1, 0])
+  const sceneY  = useTransform(scrollY, [0, 800], [0, 120])
+
+  useEffect(() => {
+    const tl = gsap.timeline({ delay: 0.8 })
+    tl.fromTo(headRef.current,
+      { y: 80, opacity: 0, skewY: 3 },
+      { y: 0, opacity: 1, skewY: 0, duration: 1.3, ease: 'power4.out' }
+    )
+    .fromTo(subRef.current,
+      { y: 40, opacity: 0 },
+      { y: 0, opacity: 1, duration: 1, ease: 'power3.out' }, '-=0.6'
+    )
+    .fromTo(ctaRef.current,
+      { y: 24, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.9, ease: 'power3.out' }, '-=0.5'
     )
   }, [])
 
   return (
-    <section id="features" className="relative z-10 py-28" ref={ref}>
-      <div className="mx-auto max-w-7xl px-6 md:px-10">
-        <div className="mb-16 text-center">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-[#00cfff]">Features</p>
-          <h2 className="text-4xl font-black tracking-tight sm:text-5xl">
-            Built for modern{' '}
-            <span style={{ background: 'linear-gradient(90deg, #00cfff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              hiring teams
-            </span>
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base text-white/40">
-            Every feature is designed to reduce time-to-hire without sacrificing accuracy or fairness.
-          </p>
+    <section className="relative flex min-h-screen items-center justify-center overflow-hidden">
+      {/* 3D canvas — covers entire viewport */}
+      <motion.div style={{ y: sceneY }} className="absolute inset-0 z-0">
+        <CinematicScene isMobile={isMobile} />
+      </motion.div>
+
+      {/* Text content — centred overlay */}
+      <motion.div
+        style={{ y: heroY, opacity: heroOp }}
+        className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-28 pt-36 text-center"
+      >
+        {/* Eyebrow */}
+        <div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-white/10 px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/35">
+          <Radar className="h-3 w-3" />
+          AI-powered ATS
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((f) => {
-            const Icon = f.icon
-            return (
-              <div
-                data-card
-                key={f.title}
-                className="group relative overflow-hidden rounded-2xl border border-white/[0.07] p-6 transition-all duration-500 hover:border-white/[0.14]"
-                style={{
-                  background: 'rgba(255,255,255,0.025)',
-                  backdropFilter: 'blur(12px)',
-                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
-                }}
-              >
-                {/* Hover glow */}
-                <div
-                  className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                  style={{
-                    background: `radial-gradient(circle at top left, ${f.color}0f 0%, transparent 70%)`,
-                  }}
-                />
-                <div
-                  className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl"
-                  style={{
-                    background: `${f.color}15`,
-                    border: `1px solid ${f.color}30`,
-                    boxShadow: `0 0 20px ${f.color}20`,
-                  }}
-                >
-                  <Icon className="h-5 w-5" style={{ color: f.color }} />
-                </div>
-                <h3 className="mb-2 text-base font-semibold tracking-tight text-white/90">{f.title}</h3>
-                <p className="text-sm leading-relaxed text-white/40">{f.desc}</p>
-              </div>
-            )
-          })}
+        {/* Headline — large, sparse, intentional */}
+        <h1
+          ref={headRef}
+          className="mx-auto mb-6 max-w-5xl text-5xl font-black leading-[1.02] tracking-[-0.04em] text-white sm:text-7xl lg:text-[5.5rem]"
+          style={{ opacity: 0 }}
+        >
+          The intelligence<br />
+          behind{' '}
+          <em
+            className="not-italic"
+            style={{
+              background: 'linear-gradient(135deg, #4090ff 0%, #8040ff 45%, #40c0ff 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundSize: '200% auto',
+              animation: 'gradientShift 5s linear infinite',
+            }}
+          >
+            every hire
+          </em>
+        </h1>
+
+        <p
+          ref={subRef}
+          className="mx-auto mb-12 max-w-xl text-lg leading-loose text-white/30 sm:text-xl"
+          style={{ opacity: 0 }}
+        >
+          Upload a resume. Define the role. Receive a precise AI match score
+          with zero guesswork — in under twenty seconds.
+        </p>
+
+        <div ref={ctaRef} className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center" style={{ opacity: 0 }}>
+          <CinematicButton href="/dashboard" variant="primary">
+            <Zap className="h-3.5 w-3.5 opacity-60" />
+            Open the Dashboard
+            <ArrowUpRight className="h-3.5 w-3.5 opacity-40 transition-all group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </CinematicButton>
+          <CinematicButton href="#process" variant="outline">
+            See how it works
+          </CinematicButton>
         </div>
+      </motion.div>
+
+      {/* Scroll indicator */}
+      <motion.div
+        className="absolute bottom-10 left-1/2 z-10 -translate-x-1/2 flex flex-col items-center gap-2"
+        animate={{ opacity: [0.3, 0.7, 0.3] }}
+        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+      >
+        <span className="text-[10px] uppercase tracking-[0.2em] text-white/20">Scroll</span>
+        <ChevronDown className="h-4 w-4 text-white/15" />
+      </motion.div>
+    </section>
+  )
+}
+
+// ── Statement section — big typography ──────────────────────────────────────
+function StatementSection() {
+  return (
+    <section className="relative z-10 py-40">
+      <div className="mx-auto max-w-6xl px-8">
+        <Reveal>
+          <p className="mb-6 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/25">
+            The problem
+          </p>
+        </Reveal>
+        <Reveal delay={0.08}>
+          <h2 className="text-4xl font-black leading-[1.1] tracking-[-0.03em] text-white/80 sm:text-6xl lg:text-7xl">
+            Hiring teams spend
+            <br />
+            <span className="text-white/25">
+              hours on resumes
+            </span>
+            <br />
+            that take seconds to judge.
+          </h2>
+        </Reveal>
+        <Reveal delay={0.16} className="mt-10">
+          <p className="max-w-xl text-lg leading-loose text-white/30">
+            The gap between resume volume and hiring quality is widening.
+            NeonATS closes it with precision AI scoring — not keyword matching,
+            but genuine role alignment analysis.
+          </p>
+        </Reveal>
       </div>
     </section>
   )
 }
 
-// ── How it works ──────────────────────────────────────────────────────────────
-function HowItWorksSection() {
+// ── Process — horizontal timeline ────────────────────────────────────────────
+function ProcessSection() {
   const steps = [
-    { n: '01', title: 'Paste your JD', desc: 'Drop the job description into the editor. Or use our sample Senior Frontend Engineer JD.' },
-    { n: '02', title: 'Upload the resume', desc: 'Drag & drop a PDF, DOCX or TXT file. Text is extracted server-side instantly.' },
-    { n: '03', title: 'AI analysis runs', desc: 'Our LLM evaluates skills, experience years, role alignment, and outputs a weighted score.' },
-    { n: '04', title: 'Review & decide', desc: 'See the full breakdown, skill gaps, key strengths, and AI recommendation in the dashboard.' },
+    {
+      index: '01',
+      title: 'Paste the job description',
+      body: 'Define the role in plain language. No special format needed — the AI reads context, not structure.',
+    },
+    {
+      index: '02',
+      title: 'Drop the resume',
+      body: 'PDF, DOCX, or plain text. Server-side extraction happens in milliseconds. Nothing is stored beyond your session.',
+    },
+    {
+      index: '03',
+      title: 'AI runs the analysis',
+      body: 'A weighted rubric: 50% technical depth, 35% relevant experience, 15% domain context. Transparent and auditable.',
+    },
+    {
+      index: '04',
+      title: 'You decide faster',
+      body: 'Match score, skill gaps, key strengths, and a hiring recommendation — one unified view. No interpretation required.',
+    },
   ]
 
   return (
-    <section id="how-it-works" className="relative z-10 py-28">
-      <div className="mx-auto max-w-7xl px-6 md:px-10">
-        <div className="mb-16 text-center">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-[#00cfff]">Process</p>
-          <h2 className="text-4xl font-black tracking-tight sm:text-5xl">How it works</h2>
-        </div>
-        <div className="relative grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Connector line */}
-          <div className="absolute left-8 top-10 hidden h-px w-[calc(100%-4rem)] bg-gradient-to-r from-[#00cfff]/20 via-[#7c3aed]/20 to-transparent lg:block" />
+    <section id="process" className="relative z-10 py-32">
+      <div className="mx-auto max-w-6xl px-8">
+        <Reveal className="mb-20">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/25">Process</p>
+          <h2 className="mt-4 text-4xl font-black tracking-[-0.03em] text-white/80 sm:text-5xl">
+            Four steps.<br />Twenty seconds.
+          </h2>
+        </Reveal>
+
+        <div className="grid grid-cols-1 gap-1 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((s, i) => (
-            <motion.div
-              key={s.n}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: i * 0.12, ease: [0.22, 0.6, 0.36, 1] }}
-              viewport={{ once: true }}
-              className="relative rounded-2xl border border-white/[0.07] bg-white/[0.025] p-6 backdrop-blur-sm"
-            >
-              <div
-                className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl text-sm font-black"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(0,207,255,0.15), rgba(124,58,237,0.15))',
-                  border: '1px solid rgba(0,207,255,0.25)',
-                  color: '#00cfff',
-                }}
-              >
-                {s.n}
+            <Reveal key={s.index} delay={i * 0.09}>
+              <div className="group relative border-t border-white/[0.06] py-8 pr-8 transition-colors hover:border-white/[0.14]">
+                {/* Index number */}
+                <span className="mb-5 block text-[10px] font-bold tracking-[0.2em] text-white/15">
+                  {s.index}
+                </span>
+                <h3 className="mb-3 text-base font-semibold leading-tight text-white/70 group-hover:text-white/90 transition-colors">
+                  {s.title}
+                </h3>
+                <p className="text-sm leading-relaxed text-white/30">{s.body}</p>
               </div>
-              <h3 className="mb-2 text-base font-semibold text-white/90">{s.title}</h3>
-              <p className="text-sm leading-relaxed text-white/40">{s.desc}</p>
-            </motion.div>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -483,194 +429,61 @@ function HowItWorksSection() {
   )
 }
 
-// ── Stats ─────────────────────────────────────────────────────────────────────
-function StatsSection() {
-  const stats = [
-    { value: '10,000+', label: 'Resumes analyzed' },
-    { value: '95%', label: 'Score accuracy' },
-    { value: '4.9 / 5', label: 'Recruiter rating' },
-    { value: '87%', label: 'Time saved per hire' },
+// ── Proof section ─────────────────────────────────────────────────────────────
+function ProofSection() {
+  const data = [
+    { value: '< 20s', label: 'Per analysis' },
+    { value: '95%',   label: 'Scoring accuracy' },
+    { value: '10×',   label: 'Faster than manual' },
+    { value: '0',     label: 'Setup required' },
   ]
 
   return (
-    <section className="relative z-10 py-24">
-      <div className="mx-auto max-w-7xl px-6 md:px-10">
-        <div
-          className="relative overflow-hidden rounded-3xl px-8 py-16"
-          style={{
-            background: 'linear-gradient(135deg, rgba(0,207,255,0.06) 0%, rgba(124,58,237,0.06) 100%)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            backdropFilter: 'blur(24px)',
-          }}
-        >
-          {/* BG decoration */}
-          <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full"
-            style={{ background: 'radial-gradient(circle, rgba(0,207,255,0.12) 0%, transparent 70%)' }} />
-          <div className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full"
-            style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)' }} />
-
-          <div className="relative grid grid-cols-2 gap-8 sm:grid-cols-4">
-            {stats.map((s, i) => (
-              <motion.div
-                key={s.label}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                viewport={{ once: true }}
-                className="text-center"
-              >
+    <section className="relative z-10 py-32">
+      <div className="mx-auto max-w-6xl px-8">
+        <div className="grid grid-cols-2 gap-px border border-white/[0.06] lg:grid-cols-4">
+          {data.map((d, i) => (
+            <Reveal key={d.label} delay={i * 0.07}>
+              <div className="border-r border-white/[0.04] px-8 py-10 last:border-0">
                 <p
-                  className="text-4xl font-black tracking-tight sm:text-5xl"
+                  className="mb-1 text-4xl font-black tracking-tight text-white/80 sm:text-5xl"
                   style={{
-                    background: 'linear-gradient(135deg, #00cfff, #a78bfa)',
+                    background: 'linear-gradient(135deg, #4090ff, #8040ff)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                   }}
                 >
-                  {s.value}
+                  {d.value}
                 </p>
-                <p className="mt-2 text-sm text-white/40">{s.label}</p>
-              </motion.div>
-            ))}
+                <p className="text-xs text-white/25">{d.label}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ── Testimonial — single, full weight ────────────────────────────────────────
+function TestimonialSection() {
+  return (
+    <section className="relative z-10 py-40">
+      <div className="mx-auto max-w-4xl px-8">
+        <Reveal>
+          <blockquote className="text-3xl font-light leading-[1.4] tracking-[-0.01em] text-white/50 sm:text-4xl lg:text-[2.6rem]">
+            &ldquo;We cut resume review from three hours to eighteen minutes.
+            The AI scoring feels like having a senior recruiter who never
+            gets tired or biased.&rdquo;
+          </blockquote>
+          <div className="mt-8 flex items-center gap-4">
+            <div className="h-px w-8 bg-white/20" />
+            <div>
+              <p className="text-sm font-semibold text-white/50">Sarah Mitchell</p>
+              <p className="text-xs text-white/20">Head of Talent · Series B startup</p>
+            </div>
           </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-// ── Testimonials ──────────────────────────────────────────────────────────────
-const TESTIMONIALS = [
-  { name: 'Sarah Mitchell', role: 'Head of Talent, Stripe-backed startup', text: 'We cut resume review time from 3 hours to 20 minutes. The AI scoring is remarkably accurate — no inflated scores.' },
-  { name: 'James Okafor', role: 'Senior Recruiter, Tech Agency', text: "The skill gap analysis alone saves me 2+ hours per hire. It surfaces exactly what's missing without hallucinating requirements." },
-  { name: 'Priya Nair', role: 'Engineering Manager', text: "Finally an ATS that doesn't just keyword-match. The weighted scoring actually reflects what matters for senior engineering roles." },
-]
-
-function TestimonialsSection() {
-  return (
-    <section className="relative z-10 py-24">
-      <div className="mx-auto max-w-7xl px-6 md:px-10">
-        <div className="mb-14 text-center">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-[#00cfff]">Reviews</p>
-          <h2 className="text-4xl font-black tracking-tight sm:text-5xl">Loved by recruiters</h2>
-        </div>
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-          {TESTIMONIALS.map((t, i) => (
-            <motion.div
-              key={t.name}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: i * 0.1 }}
-              viewport={{ once: true }}
-              className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-6 backdrop-blur-sm"
-            >
-              <div className="mb-4 flex gap-0.5">
-                {[...Array(5)].map((_, j) => (
-                  <Star key={j} className="h-3.5 w-3.5 fill-[#00cfff] text-[#00cfff]" />
-                ))}
-              </div>
-              <p className="mb-5 text-sm leading-relaxed text-white/60">&ldquo;{t.text}&rdquo;</p>
-              <div>
-                <p className="text-sm font-semibold text-white/90">{t.name}</p>
-                <p className="text-xs text-white/35">{t.role}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-// ── Pricing ───────────────────────────────────────────────────────────────────
-function PricingSection() {
-  const plans = [
-    {
-      name: 'Free', price: '$0', period: 'forever',
-      features: ['Unlimited uploads', 'AI match scoring', 'PDF · DOCX · TXT', 'Pipeline dashboard'],
-      cta: 'Get started', popular: false,
-    },
-    {
-      name: 'Pro', price: '$29', period: 'per month',
-      features: ['Everything in Free', 'Priority AI processing', 'Team collaboration', 'Export to CSV', 'API access'],
-      cta: 'Start free trial', popular: true,
-    },
-    {
-      name: 'Enterprise', price: 'Custom', period: 'contact us',
-      features: ['Everything in Pro', 'Dedicated instance', 'SSO / SAML', 'Custom AI tuning', 'SLA guarantee'],
-      cta: 'Contact sales', popular: false,
-    },
-  ]
-
-  return (
-    <section id="pricing" className="relative z-10 py-24">
-      <div className="mx-auto max-w-7xl px-6 md:px-10">
-        <div className="mb-14 text-center">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-[#00cfff]">Pricing</p>
-          <h2 className="text-4xl font-black tracking-tight sm:text-5xl">Simple, transparent pricing</h2>
-        </div>
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-          {plans.map((p, i) => (
-            <motion.div
-              key={p.name}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: i * 0.1 }}
-              viewport={{ once: true }}
-              className="relative overflow-hidden rounded-2xl border p-7"
-              style={{
-                background: p.popular
-                  ? 'linear-gradient(135deg, rgba(0,207,255,0.08), rgba(124,58,237,0.08))'
-                  : 'rgba(255,255,255,0.025)',
-                border: p.popular ? '1px solid rgba(0,207,255,0.3)' : '1px solid rgba(255,255,255,0.07)',
-                backdropFilter: 'blur(16px)',
-                boxShadow: p.popular ? '0 0 40px rgba(0,207,255,0.1)' : 'none',
-              }}
-            >
-              {p.popular && (
-                <span
-                  className="absolute right-5 top-5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-black"
-                  style={{ background: 'linear-gradient(90deg, #00cfff, #7c3aed)' }}
-                >
-                  Most Popular
-                </span>
-              )}
-              <p className="mb-1 text-sm font-semibold text-white/50">{p.name}</p>
-              <p className="mb-1">
-                <span className="text-4xl font-black text-white">{p.price}</span>
-                <span className="ml-1 text-sm text-white/35">/ {p.period}</span>
-              </p>
-              <div className="my-6 h-px bg-white/[0.06]" />
-              <ul className="mb-7 space-y-2.5">
-                {p.features.map((f) => (
-                  <li key={f} className="flex items-center gap-2.5 text-sm text-white/60">
-                    <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-[#00cfff]" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <a
-                href="/dashboard"
-                className="block w-full rounded-xl py-3 text-center text-sm font-semibold transition-all duration-300"
-                style={
-                  p.popular
-                    ? {
-                        background: 'linear-gradient(135deg, #00cfff, #7c3aed)',
-                        color: '#000',
-                        boxShadow: '0 0 24px rgba(0,207,255,0.3)',
-                      }
-                    : {
-                        background: 'rgba(255,255,255,0.06)',
-                        color: 'rgba(255,255,255,0.7)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                      }
-                }
-              >
-                {p.cta}
-              </a>
-            </motion.div>
-          ))}
-        </div>
+        </Reveal>
       </div>
     </section>
   )
@@ -679,30 +492,21 @@ function PricingSection() {
 // ── CTA ───────────────────────────────────────────────────────────────────────
 function CtaSection() {
   return (
-    <section className="relative z-10 py-32">
-      <div className="mx-auto max-w-4xl px-6 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-        >
-          <h2 className="mb-6 text-5xl font-black leading-tight tracking-tight sm:text-6xl">
-            Start screening{' '}
-            <span style={{ background: 'linear-gradient(90deg, #00cfff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              smarter
-            </span>{' '}
-            today
+    <section className="relative z-10 py-48">
+      <div className="mx-auto max-w-4xl px-8 text-center">
+        <Reveal>
+          <h2 className="mb-4 text-5xl font-black tracking-[-0.04em] text-white/80 sm:text-6xl lg:text-7xl">
+            Ready?
           </h2>
-          <p className="mx-auto mb-10 max-w-xl text-lg text-white/40">
-            No setup. No credit card. Just drop a resume and experience AI hiring intelligence.
+          <p className="mx-auto mb-12 max-w-sm text-base text-white/25">
+            No account required. No credit card. Drop a resume and see the future of screening.
           </p>
-          <MagneticBtn href="/dashboard" variant="primary" className="text-base px-10 py-4">
-            <Zap className="h-4 w-4" />
-            Launch NeonATS Free
-            <ArrowRight className="h-4 w-4" />
-          </MagneticBtn>
-        </motion.div>
+          <CinematicButton href="/dashboard" variant="primary">
+            <Zap className="h-3.5 w-3.5 opacity-60" />
+            Start for free
+            <ArrowUpRight className="h-3.5 w-3.5 opacity-40 transition-all group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </CinematicButton>
+        </Reveal>
       </div>
     </section>
   )
@@ -711,61 +515,101 @@ function CtaSection() {
 // ── Footer ────────────────────────────────────────────────────────────────────
 function Footer() {
   return (
-    <footer className="relative z-10 border-t border-white/[0.06] bg-[#050508]/80 py-10 backdrop-blur-sm">
-      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
-        <div className="flex items-center gap-2.5">
-          <Radar className="h-4 w-4 text-[#00cfff]" />
-          <span
-            className="text-sm font-bold"
-            style={{ background: 'linear-gradient(90deg, #00cfff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
-          >
-            NeonATS
-          </span>
-          <span className="text-xs text-white/25">AI Resume ATS</span>
+    <footer className="relative z-10 border-t border-white/[0.05] py-8">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-8">
+        <div className="flex items-center gap-2">
+          <Radar className="h-3.5 w-3.5 text-white/20" />
+          <span className="text-xs font-semibold text-white/20">NeonATS</span>
         </div>
-        <p className="text-xs text-white/25">© 2026 NeonATS. Built with Next.js · Three.js · Neon · z-ai SDK</p>
-        <div className="flex items-center gap-4">
-          <a href="#" className="text-white/25 transition-colors hover:text-white/60"><Globe className="h-4 w-4" /></a>
-          <a href="#" className="text-white/25 transition-colors hover:text-white/60"><Github className="h-4 w-4" /></a>
-          <a href="#" className="text-white/25 transition-colors hover:text-white/60"><Twitter className="h-4 w-4" /></a>
-        </div>
+        <p className="text-[11px] text-white/12">
+          © 2026 — Built with Next.js · Three.js · Neon
+        </p>
+        <Link href="/dashboard" className="text-xs text-white/20 transition-colors hover:text-white/40">
+          Dashboard →
+        </Link>
       </div>
     </footer>
   )
 }
 
-// ── Root ──────────────────────────────────────────────────────────────────────
+// ── Root page ─────────────────────────────────────────────────────────────────
 export default function LandingPage() {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    setIsMobile(window.navigator.maxTouchPoints > 0 || window.innerWidth < 768)
+  }, [])
+
   return (
     <div
-      className="relative min-h-screen overflow-x-hidden text-[#e8edf5]"
-      style={{ background: '#050508' }}
+      className="relative overflow-x-hidden text-[#e8edf5]"
+      style={{ background: '#030412' }}
     >
-      {/* Global gradient shift animation */}
+      {/* Global styles */}
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        * { font-family: 'Inter', system-ui, sans-serif; }
+
         @keyframes gradientShift {
-          0%   { background-position: 0% 50% }
+          0%   { background-position: 0%   50% }
           50%  { background-position: 100% 50% }
-          100% { background-position: 0% 50% }
+          100% { background-position: 0%   50% }
         }
+
+        @keyframes rippleExpand {
+          0%   { transform: scale(1);   opacity: 1; }
+          100% { transform: scale(32);  opacity: 0; }
+        }
+
         @keyframes shimmer {
-          0%   { transform: translateX(-100%) }
-          100% { transform: translateX(400%) }
+          0%   { background-position: -200% 0 }
+          100% { background-position:  200% 0 }
         }
-        .animate-shimmer { animation: shimmer 1.8s infinite }
+
+        ::selection { background: rgba(80,140,255,0.25); }
+
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: #030412; }
+        ::-webkit-scrollbar-thumb { background: rgba(80,120,255,0.3); border-radius: 2px; }
+
         @media (prefers-reduced-motion: reduce) {
-          * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important }
+          *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+          }
         }
       `}</style>
 
-      <Navbar />
-      <HeroSection />
-      <LogoStripSection />
-      <FeaturesSection />
-      <HowItWorksSection />
-      <StatsSection />
-      <TestimonialsSection />
-      <PricingSection />
+      {/* Cursor energy trail — only on desktop */}
+      {!isMobile && <CursorTrail />}
+
+      {/* Thin nav */}
+      <nav className="fixed top-0 z-50 w-full border-b border-white/[0.04] bg-[#030412]/70 backdrop-blur-2xl">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-8 py-4">
+          <div className="flex items-center gap-2">
+            <Radar className="h-4 w-4 text-white/30" />
+            <span className="text-sm font-bold tracking-tight text-white/50">NeonATS</span>
+          </div>
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-1.5 text-xs font-medium text-white/30 transition-colors hover:text-white/60"
+          >
+            Open app
+            <ArrowUpRight className="h-3 w-3" />
+          </Link>
+        </div>
+      </nav>
+
+      {/* All sections */}
+      <HeroSection isMobile={isMobile} />
+      <StatementSection />
+      <Rule />
+      <ProcessSection />
+      <Rule />
+      <ProofSection />
+      <Rule />
+      <TestimonialSection />
       <CtaSection />
       <Footer />
     </div>
