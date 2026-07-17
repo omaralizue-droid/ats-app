@@ -50,17 +50,15 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-    if (
-      typeof body.matchScore !== 'number' ||
-      body.matchScore < 0 ||
-      body.matchScore > 100
-    ) {
-      // matchScore lives inside ats_evaluation — validate there.
-    }
-
-    const contact = body.contact ?? {};
-    const experience = body.experience_summary ?? {};
-    const ats = body.ats_evaluation ?? {};
+    const contact = body.contact ?? { email: null, phone: null, linkedin: null };
+    const experience = body.experience_summary ?? { total_years: 0, latest_role: '', latest_company: '' };
+    const ats = body.ats_evaluation ?? {
+      match_score: 0,
+      verdict: 'Potential Review' as const,
+      key_strengths: [],
+      missing_skills_or_gaps: [],
+      brief_summary: '',
+    };
 
     const matchScore = typeof ats.match_score === 'number'
       ? Math.max(0, Math.min(100, Math.round(ats.match_score)))

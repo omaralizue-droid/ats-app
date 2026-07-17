@@ -52,3 +52,10 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Local executables and runner scripts
+bun.exe
+run-dev.ps1
+bun_path.txt
+env_bg.txt
+*.db

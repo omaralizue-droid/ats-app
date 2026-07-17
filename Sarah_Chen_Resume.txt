@@ -1,0 +1,23 @@
+Sarah Chen
+sarah.chen@email.com | +1 (415) 555-0142 | San Francisco, CA
+
+Senior Software Engineer
+
+EXPERIENCE
+Senior Frontend Engineer, TechCorp (2021 - Present)
+- Led migration of a legacy React app to Next.js 14 App Router, improving LCP by 40%
+- Built a design system in TypeScript with 60+ components and Storybook docs
+- Mentored 3 junior engineers and established TDD practices with Vitest and Playwright
+- Optimized Core Web Vitals; achieved 98+ Lighthouse performance scores
+
+Frontend Engineer, StartupXYZ (2018 - 2021)
+- Developed React + TypeScript customer dashboard used by 200k+ users
+- Implemented state management with Zustand and TanStack Query
+- Built real-time notification system with WebSockets
+- Set up CI/CD on GitHub Actions and deployed to Vercel
+
+SKILLS
+React, TypeScript, Next.js, Tailwind CSS, Zustand, TanStack Query, GraphQL, Apollo, Vitest, Jest, Playwright, Storybook, Node.js, Git, CI/CD, WebSockets, Accessibility (WCAG), Performance Optimization
+
+EDUCATION
+B.S. Computer Science, UC Berkeley, 2018

@@ -208,6 +208,7 @@ export async function analyzeResume(
   let content: string | undefined;
   try {
     const completion = await zai.chat.completions.create({
+      model: 'glm-4-flash',
       messages: [
         { role: 'assistant', content: SYSTEM_PROMPT },
         { role: 'user', content: USER_PROMPT_TEMPLATE(resumeText, jobDescription) },
