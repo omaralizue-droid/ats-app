@@ -196,9 +196,22 @@ export async function analyzeResume(
     throw new Error('Job description is required for analysis.');
   }
 
-  let zai: Awaited<ReturnType<typeof ZAI.create>>;
+  let zai: ZAI;
   try {
-    zai = await ZAI.create();
+    const apiKey = process.env.ZAI_API_KEY;
+    const baseUrl = process.env.ZAI_BASE_URL;
+
+    if (apiKey && baseUrl) {
+      const ZAIClass = ZAI as any;
+      zai = new ZAIClass({
+        apiKey,
+        baseUrl,
+        chatId: process.env.ZAI_CHAT_ID || '',
+        userId: process.env.ZAI_USER_ID || '',
+      }) as ZAI;
+    } else {
+      zai = await ZAI.create();
+    }
   } catch (err) {
     throw new Error(
       `Failed to initialize AI client: ${err instanceof Error ? err.message : String(err)}`,
