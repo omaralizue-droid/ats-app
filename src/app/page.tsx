@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { motion, useInView } from 'framer-motion'
 import Link from 'next/link'
 import {
@@ -22,6 +23,10 @@ import {
   Github,
   Twitter,
 } from 'lucide-react'
+
+const ThreeCanvas = dynamic(() => import('@/components/three/ThreeCanvas'), {
+  ssr: false,
+})
 
 /* ── Ambient background decorations ─────────────────────────────────────── */
 
@@ -57,6 +62,11 @@ function AmbienceLayer() {
 export default function LandingPage() {
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#090d16] text-[#e6edf7]">
+      {/* Three.js animated neon particle field — fills the viewport */}
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <ThreeCanvas particleCount={110} variant="dense" className="h-full w-full" />
+      </div>
+      {/* Radial gradient overlays on top of the 3D canvas */}
       <AmbienceLayer />
       <div className="relative z-10">
         <Navbar />

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard,
@@ -23,6 +24,10 @@ import {
 } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+
+const ThreeCanvas = dynamic(() => import('@/components/three/ThreeCanvas'), {
+  ssr: false,
+})
 
 export interface SidebarStats {
   total: number
@@ -55,12 +60,17 @@ export function Sidebar({ activeView, onNavigate, stats, className }: SidebarPro
           'glass-strong sticky top-0 hidden h-screen w-[240px] shrink-0 flex-col border-r border-white/5 md:flex',
           className,
         )}
+        style={{ position: 'relative', overflow: 'hidden' }}
       >
-        <SidebarContent
-          activeView={activeView}
-          onNavigate={onNavigate}
-          stats={stats}
-        />
+        {/* Three.js subtle particle field inside sidebar */}
+        <ThreeCanvas particleCount={35} variant="sparse" className="opacity-30" />
+        <div className="relative z-10 flex h-full flex-col">
+          <SidebarContent
+            activeView={activeView}
+            onNavigate={onNavigate}
+            stats={stats}
+          />
+        </div>
       </aside>
 
       {/* Mobile top bar */}
