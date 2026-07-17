@@ -106,25 +106,23 @@ function SidebarContent({
                 <button
                   onClick={() => onNavigate(item.value)}
                   className={cn(
-                    'group relative flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all',
+                    'group relative flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
                     isActive
-                      ? 'bg-white/[0.05] text-[#00F0FF]'
-                      : 'text-muted-foreground hover:bg-white/[0.03] hover:text-foreground',
+                      ? 'bg-white/[0.04] text-white/80'
+                      : 'text-white/30 hover:bg-white/[0.025] hover:text-white/60',
                   )}
                 >
-                  {/* Active left border accent */}
                   {isActive && (
                     <motion.span
                       layoutId="sidebar-active"
-                      className="absolute inset-y-1 left-0 w-[3px] rounded-r-full bg-[#00F0FF]"
-                      style={{ boxShadow: '0 0 12px rgba(0,240,255,0.8)' }}
+                      className="absolute inset-y-1.5 left-0 w-[2px] rounded-r-full bg-[#4090ff]"
                       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                     />
                   )}
                   <Icon
                     className={cn(
                       'h-4 w-4 shrink-0 transition-colors',
-                      isActive ? 'text-[#00F0FF]' : 'text-muted-foreground group-hover:text-foreground',
+                      isActive ? 'text-[#4090ff]' : 'text-white/25 group-hover:text-white/50',
                     )}
                   />
                   {item.label}
@@ -135,37 +133,15 @@ function SidebarContent({
         </ul>
       </nav>
 
-      {/* Stats mini cards */}
-      <div className="border-t border-white/5 p-3">
-        <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+      <div className="border-t border-white/[0.05] p-3">
+        <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/20">
           Pipeline
         </p>
-        <div className="grid grid-cols-2 gap-2">
-          <MiniStatCard
-            label="Total"
-            value={stats.total}
-            color="#00F0FF"
-            icon={<Users className="h-3 w-3" />}
-          />
-          <MiniStatCard
-            label="Shortlisted"
-            value={stats.shortlisted}
-            color="#00FF66"
-            icon={<ThumbsUp className="h-3 w-3" />}
-          />
-          <MiniStatCard
-            label="Avg score"
-            value={stats.avgScore}
-            suffix=""
-            color="#FFB340"
-            icon={<Gauge className="h-3 w-3" />}
-          />
-          <MiniStatCard
-            label="Rejected"
-            value={stats.rejected}
-            color="#FF2D55"
-            icon={<X className="h-3 w-3" />}
-          />
+        <div className="grid grid-cols-2 gap-1.5">
+          <MiniStatCard label="Total"       value={stats.total}       color="#4090ff" icon={<Users    className="h-3 w-3" />} />
+          <MiniStatCard label="Shortlisted" value={stats.shortlisted} color="#40d080" icon={<ThumbsUp className="h-3 w-3" />} />
+          <MiniStatCard label="Avg score"   value={stats.avgScore}    color="#ffb340" icon={<Gauge    className="h-3 w-3" />} suffix="" />
+          <MiniStatCard label="Rejected"    value={stats.rejected}    color="#ff4060" icon={<X        className="h-3 w-3" />} />
         </div>
       </div>
     </div>
@@ -176,21 +152,16 @@ function Logo() {
   return (
     <div className="flex items-center gap-2.5">
       <div
-        className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-[rgba(0,240,255,0.1)] neon-border-cyan"
+        className="relative flex h-8 w-8 items-center justify-center rounded-lg"
+        style={{ background: 'rgba(64,144,255,0.08)', border: '1px solid rgba(64,144,255,0.2)' }}
       >
-        <Radar className="h-4 w-4 text-[#00F0FF]" />
-        <motion.span
-          aria-hidden
-          className="absolute inset-0 rounded-lg"
-          animate={{ boxShadow: ['0 0 0px rgba(0,240,255,0)', '0 0 12px rgba(0,240,255,0.5)', '0 0 0px rgba(0,240,255,0)'] }}
-          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-        />
+        <Radar className="h-4 w-4 text-[#4090ff]" />
       </div>
       <div className="flex flex-col leading-none">
-        <span className="gradient-text-cyan text-base font-bold tracking-tight">
+        <span className="gradient-text text-base font-bold tracking-tight">
           NeonATS
         </span>
-        <span className="text-[9px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+        <span className="text-[9px] font-medium uppercase tracking-[0.2em] text-white/20">
           AI Resume ATS
         </span>
       </div>
@@ -199,11 +170,7 @@ function Logo() {
 }
 
 function MiniStatCard({
-  label,
-  value,
-  color,
-  icon,
-  suffix,
+  label, value, color, icon, suffix = '%',
 }: {
   label: string
   value: number
@@ -213,19 +180,15 @@ function MiniStatCard({
 }) {
   return (
     <div
-      className="flex flex-col gap-1 rounded-lg border bg-white/[0.02] px-2.5 py-2"
-      style={{ borderColor: `${color}30` }}
+      className="flex flex-col gap-1 rounded-lg bg-white/[0.02] px-2.5 py-2"
+      style={{ border: `1px solid ${color}20` }}
     >
-      <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wider text-white/20">
         <span style={{ color }}>{icon}</span>
         {label}
       </div>
-      <span
-        className="text-lg font-bold leading-none"
-        style={{ color, textShadow: `0 0 10px ${color}55` }}
-      >
-        {value}
-        {suffix}
+      <span className="text-lg font-black leading-none" style={{ color }}>
+        {value}{suffix}
       </span>
     </div>
   )
