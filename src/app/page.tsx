@@ -2,639 +2,480 @@
 
 import { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
-import { motion, useInView } from 'framer-motion'
 import Link from 'next/link'
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import {
+  ArrowRight,
   Sparkles,
   Radar,
   Zap,
-  UploadCloud,
   Brain,
   BarChart3,
   ShieldCheck,
-  ChevronRight,
+  UploadCloud,
+  ChevronDown,
   CheckCircle2,
-  ArrowRight,
   Star,
-  FileSearch,
-  Wand2,
-  Play,
   Globe,
   Github,
   Twitter,
 } from 'lucide-react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
-const ThreeCanvas = dynamic(() => import('@/components/three/ThreeCanvas'), {
+gsap.registerPlugin(ScrollTrigger)
+
+const HeroScene = dynamic(() => import('@/components/three/HeroScene'), {
   ssr: false,
-})
-
-/* ── Ambient background decorations ─────────────────────────────────────── */
-
-function AmbienceLayer() {
-  return (
-    <>
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 z-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,240,255,0.07) 0%, transparent 70%),' +
-            'radial-gradient(ellipse 60% 40% at 85% 30%, rgba(0,255,102,0.05) 0%, transparent 60%),' +
-            'radial-gradient(ellipse 50% 60% at 10% 80%, rgba(0,240,255,0.04) 0%, transparent 60%)',
-        }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 z-0"
-        style={{
-          backgroundImage:
-            'linear-gradient(rgba(0,240,255,0.025) 1px, transparent 1px),' +
-            'linear-gradient(90deg, rgba(0,240,255,0.025) 1px, transparent 1px)',
-          backgroundSize: '48px 48px',
-        }}
-      />
-    </>
-  )
-}
-
-/* ── Root page ───────────────────────────────────────────────────────────── */
-
-export default function LandingPage() {
-  return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#090d16] text-[#e6edf7]">
-      {/* Three.js animated neon particle field — fills the viewport */}
-      <div className="pointer-events-none fixed inset-0 z-0">
-        <ThreeCanvas particleCount={110} variant="dense" className="h-full w-full" />
-      </div>
-      {/* Radial gradient overlays on top of the 3D canvas */}
-      <AmbienceLayer />
-      <div className="relative z-10">
-        <Navbar />
-        <HeroSection />
-        <LogoStripSection />
-        <FeaturesSection />
-        <HowItWorksSection />
-        <StatsSection />
-        <TestimonialsSection />
-        <PricingSection />
-        <CtaSection />
-        <Footer />
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center">
+      <div className="h-2 w-32 overflow-hidden rounded-full bg-white/5">
+        <div className="h-full animate-shimmer w-1/2 rounded-full bg-gradient-to-r from-transparent via-[#00cfff]/30 to-transparent" />
       </div>
     </div>
+  ),
+})
+
+// ── Magnetic button ──────────────────────────────────────────────────────────
+function MagneticBtn({
+  children,
+  href,
+  variant = 'primary',
+  className = '',
+}: {
+  children: React.ReactNode
+  href: string
+  variant?: 'primary' | 'ghost'
+  className?: string
+}) {
+  const ref = useRef<HTMLAnchorElement>(null)
+  const [pos, setPos] = useState({ x: 0, y: 0 })
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = ref.current?.getBoundingClientRect()
+    if (!rect) return
+    const cx = rect.left + rect.width / 2
+    const cy = rect.top + rect.height / 2
+    setPos({ x: (e.clientX - cx) * 0.35, y: (e.clientY - cy) * 0.35 })
+  }
+
+  const handleMouseLeave = () => setPos({ x: 0, y: 0 })
+
+  const base =
+    'group relative inline-flex items-center gap-2.5 overflow-hidden rounded-2xl px-7 py-3.5 text-sm font-semibold transition-all duration-300'
+  const styles =
+    variant === 'primary'
+      ? 'bg-gradient-to-r from-[#00cfff] to-[#7c3aed] text-black shadow-[0_0_30px_rgba(0,207,255,0.35)] hover:shadow-[0_0_50px_rgba(0,207,255,0.55)] hover:scale-[1.03]'
+      : 'border border-white/10 bg-white/[0.04] text-white/80 hover:border-white/20 hover:bg-white/[0.08] hover:text-white'
+
+  return (
+    <motion.a
+      ref={ref}
+      href={href}
+      animate={{ x: pos.x, y: pos.y }}
+      transition={{ type: 'spring', stiffness: 220, damping: 18 }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className={`${base} ${styles} ${className}`}
+    >
+      {children}
+      {variant === 'primary' && (
+        <span className="absolute inset-0 -z-10 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-[100%]" />
+      )}
+    </motion.a>
   )
 }
 
-/* ── Navbar ──────────────────────────────────────────────────────────────── */
-
+// ── Navbar ────────────────────────────────────────────────────────────────────
 function Navbar() {
   const [scrolled, setScrolled] = useState(false)
+  const navRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20)
+    const onScroll = () => setScrolled(window.scrollY > 30)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  useEffect(() => {
+    if (navRef.current) {
+      gsap.fromTo(navRef.current,
+        { y: -80, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1.2, ease: 'power4.out', delay: 0.3 }
+      )
+    }
+  }, [])
+
   return (
-    <motion.nav
-      initial={{ y: -80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: 'easeOut' }}
-      className={`sticky top-0 z-50 flex items-center justify-between px-6 py-4 transition-all duration-300 md:px-12 lg:px-16 ${
-        scrolled ? 'border-b border-white/5 bg-[#090d16]/90 backdrop-blur-xl' : 'bg-transparent'
+    <nav
+      ref={navRef}
+      className={`fixed top-0 z-50 w-full transition-all duration-500 ${
+        scrolled
+          ? 'border-b border-white/[0.06] bg-[#050508]/80 backdrop-blur-2xl'
+          : 'bg-transparent'
       }`}
     >
-      <div className="flex items-center gap-2.5">
-        <div
-          className="relative flex h-9 w-9 items-center justify-center rounded-xl"
-          style={{
-            background: 'rgba(0,240,255,0.1)',
-            border: '1px solid rgba(0,240,255,0.4)',
-            boxShadow: '0 0 20px rgba(0,240,255,0.2)',
-          }}
-        >
-          <Radar className="h-5 w-5 text-[#00F0FF]" />
-          <motion.span
-            aria-hidden
-            className="absolute inset-0 rounded-xl"
-            animate={{
-              boxShadow: [
-                '0 0 0px rgba(0,240,255,0)',
-                '0 0 16px rgba(0,240,255,0.5)',
-                '0 0 0px rgba(0,240,255,0)',
-              ],
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 md:px-10">
+        {/* Logo */}
+        <div className="flex items-center gap-3">
+          <div
+            className="relative flex h-9 w-9 items-center justify-center rounded-xl"
+            style={{
+              background: 'linear-gradient(135deg, rgba(0,207,255,0.15), rgba(124,58,237,0.15))',
+              border: '1px solid rgba(0,207,255,0.3)',
+              boxShadow: '0 0 24px rgba(0,207,255,0.2)',
             }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        </div>
-        <div className="flex flex-col leading-none">
-          <span className="gradient-text-cyan text-lg font-bold tracking-tight">NeonATS</span>
-          <span className="text-[8px] font-medium uppercase tracking-[0.22em] text-[#8b95a8]">
-            AI Resume ATS
+          >
+            <Radar className="h-4.5 w-4.5 text-[#00cfff]" />
+          </div>
+          <span
+            className="text-lg font-bold tracking-tight"
+            style={{
+              background: 'linear-gradient(90deg, #00cfff, #a78bfa)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            NeonATS
           </span>
         </div>
-      </div>
 
-      <div className="hidden items-center gap-8 md:flex">
-        {[
-          { label: 'Features', href: '#features' },
-          { label: 'How It Works', href: '#how-it-works' },
-          { label: 'Pricing', href: '#pricing' },
-        ].map((item) => (
-          <a
-            key={item.label}
-            href={item.href}
-            className="text-sm font-medium text-[#8b95a8] transition-colors hover:text-[#e6edf7]"
-          >
-            {item.label}
-          </a>
-        ))}
-      </div>
-
-      <div className="flex items-center gap-3">
-        <Link
-          href="/dashboard"
-          className="hidden text-sm font-medium text-[#8b95a8] transition-colors hover:text-[#e6edf7] sm:block"
-        >
-          Sign in
-        </Link>
-        <Link
-          href="/dashboard"
-          className="group flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-[#05070d] transition-all duration-200 hover:opacity-90"
-          style={{
-            background: 'linear-gradient(135deg, #00f0ff 0%, #00cc88 100%)',
-            boxShadow: '0 0 20px rgba(0,240,255,0.3)',
-          }}
-        >
-          Launch App
-          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-        </Link>
-      </div>
-    </motion.nav>
-  )
-}
-
-/* ── Hero ────────────────────────────────────────────────────────────────── */
-
-function HeroSection() {
-  return (
-    <section className="relative flex flex-col items-center px-6 pb-24 pt-20 text-center md:pt-28 lg:pt-36">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wider"
-        style={{
-          background: 'rgba(0,240,255,0.08)',
-          border: '1px solid rgba(0,240,255,0.3)',
-          color: '#00F0FF',
-        }}
-      >
-        <Sparkles className="h-3 w-3" />
-        Powered by AI &middot; Built for Modern HR
-        <Sparkles className="h-3 w-3" />
-      </motion.div>
-
-      <motion.h1
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
-        className="max-w-5xl text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-6xl lg:text-7xl"
-      >
-        Screen Resumes at{' '}
-        <span className="gradient-text-cyan">Warp Speed</span>{' '}
-        with AI Precision
-      </motion.h1>
-
-      <motion.p
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        className="mt-6 max-w-2xl text-base leading-relaxed text-[#8b95a8] sm:text-lg"
-      >
-        NeonATS uses cutting-edge AI to instantly parse, score, and rank resumes against your job
-        descriptions — so your HR team focuses on the top candidates, not the paperwork.
-      </motion.p>
-
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3 }}
-        className="mt-10 flex flex-col items-center gap-4 sm:flex-row"
-      >
-        <Link
-          href="/dashboard"
-          className="group relative flex items-center gap-2.5 rounded-2xl px-8 py-4 text-base font-bold text-[#05070d] transition-all duration-200 hover:opacity-90"
-          style={{
-            background: 'linear-gradient(135deg, #00f0ff 0%, #00cc88 100%)',
-            boxShadow: '0 0 32px rgba(0,240,255,0.4), 0 4px 20px rgba(0,0,0,0.3)',
-          }}
-        >
-          <Zap className="h-5 w-5" />
-          Start Screening Free
-        </Link>
-        <a
-          href="#how-it-works"
-          className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-8 py-4 text-base font-semibold text-[#e6edf7] transition-all hover:border-white/20 hover:bg-white/[0.06]"
-        >
-          <Play className="h-4 w-4 text-[#00F0FF]" />
-          See How It Works
-        </a>
-      </motion.div>
-
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="mt-5 text-xs text-[#8b95a8]"
-      >
-        No credit card required &middot; Free forever plan &middot; GDPR compliant
-      </motion.p>
-
-      {/* App preview */}
-      <motion.div
-        initial={{ opacity: 0, y: 40, scale: 0.97 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.8, delay: 0.45, ease: 'easeOut' }}
-        className="relative mt-16 w-full max-w-6xl"
-      >
-        <div
-          className="absolute -bottom-12 left-1/2 h-32 w-3/4 -translate-x-1/2 blur-3xl"
-          style={{ background: 'rgba(0,240,255,0.15)' }}
-        />
-        <div
-          className="relative overflow-hidden rounded-2xl"
-          style={{
-            background: 'rgba(15,20,34,0.9)',
-            border: '1px solid rgba(0,240,255,0.2)',
-            boxShadow: '0 0 80px rgba(0,240,255,0.1), 0 40px 100px rgba(0,0,0,0.5)',
-          }}
-        >
-          {/* Browser chrome */}
-          <div className="flex items-center gap-2 border-b border-white/5 bg-[#0b1019] px-4 py-3">
-            <div className="flex gap-1.5">
-              <div className="h-3 w-3 rounded-full bg-[#FF2D55]/70" />
-              <div className="h-3 w-3 rounded-full bg-[#FFB340]/70" />
-              <div className="h-3 w-3 rounded-full bg-[#00FF66]/70" />
-            </div>
-            <div
-              className="mx-auto flex items-center gap-2 rounded-lg px-3 py-1 text-xs text-[#8b95a8]"
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.06)',
-              }}
+        {/* Nav links */}
+        <div className="hidden items-center gap-8 md:flex">
+          {['Features', 'How It Works', 'Pricing'].map((item) => (
+            <a
+              key={item}
+              href={`#${item.toLowerCase().replace(/ /g, '-')}`}
+              className="text-sm font-medium text-white/50 transition-colors hover:text-white"
             >
-              <div className="h-1.5 w-1.5 rounded-full bg-[#00FF66]" />
-              neonats.app/dashboard
-            </div>
-          </div>
-          <DashboardMockup />
-        </div>
-      </motion.div>
-    </section>
-  )
-}
-
-/* ── Dashboard preview mockup ─────────────────────────────────────────────── */
-
-function DashboardMockup() {
-  const statData = [
-    { label: 'Total', value: '142', color: '#00F0FF' },
-    { label: 'Avg Score', value: '78%', color: '#00FF66' },
-    { label: 'Shortlisted', value: '38', color: '#00FF66' },
-    { label: 'Reviewing', value: '65', color: '#FFB340' },
-  ]
-  const candidates = [
-    { name: 'Sarah Chen', role: 'Senior FE Engineer', score: 96, status: 'Shortlisted', color: '#00FF66' },
-    { name: 'Marcus Rodriguez', role: 'Full-Stack Dev', score: 89, status: 'Shortlisted', color: '#00FF66' },
-    { name: 'Priya Patel', role: 'React Developer', score: 81, status: 'Review', color: '#FFB340' },
-    { name: 'James Kim', role: 'Frontend Dev', score: 74, status: 'Review', color: '#FFB340' },
-    { name: 'Anya Ivanova', role: 'UI Engineer', score: 62, status: 'Pending', color: '#8b95a8' },
-  ]
-
-  return (
-    <div className="flex min-h-[360px] overflow-hidden text-left sm:min-h-[480px]">
-      {/* Sidebar */}
-      <div
-        className="hidden w-[180px] shrink-0 flex-col border-r border-white/5 sm:flex"
-        style={{ background: '#0b1019' }}
-      >
-        <div className="flex h-12 items-center border-b border-white/5 px-4">
-          <div className="flex items-center gap-2">
-            <Radar className="h-4 w-4 text-[#00F0FF]" />
-            <span className="text-sm font-bold text-[#00F0FF]">NeonATS</span>
-          </div>
-        </div>
-        {['Dashboard', 'Candidates', 'Upload', 'Analytics'].map((item, i) => (
-          <div
-            key={item}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium ${
-              i === 0 ? 'bg-[rgba(0,240,255,0.06)] text-[#00F0FF]' : 'text-[#8b95a8]'
-            }`}
-          >
-            <div
-              className={`h-1.5 w-1.5 rounded-full ${i === 0 ? 'bg-[#00F0FF]' : 'bg-transparent'}`}
-            />
-            {item}
-          </div>
-        ))}
-      </div>
-
-      {/* Main content */}
-      <div className="flex-1 overflow-hidden p-4 sm:p-6">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {statData.map((s) => (
-            <div
-              key={s.label}
-              className="rounded-xl p-3 sm:p-4"
-              style={{
-                background: 'rgba(255,255,255,0.02)',
-                border: `1px solid ${s.color}20`,
-              }}
-            >
-              <p className="text-[9px] uppercase tracking-widest text-[#8b95a8]">{s.label}</p>
-              <p className="mt-1 text-xl font-bold sm:text-2xl" style={{ color: s.color }}>
-                {s.value}
-              </p>
-            </div>
+              {item}
+            </a>
           ))}
         </div>
 
-        <div className="mt-4">
-          <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#8b95a8]">
-            Top Candidates
-          </p>
-          <div className="space-y-1.5">
-            {candidates.map((c) => (
-              <div
-                key={c.name}
-                className="flex items-center gap-3 rounded-lg px-3 py-2"
-                style={{
-                  background: 'rgba(255,255,255,0.02)',
-                  border: '1px solid rgba(255,255,255,0.05)',
-                }}
-              >
-                <div
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold"
-                  style={{ background: `${c.color}20`, color: c.color }}
-                >
-                  {c.name.charAt(0)}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-semibold text-[#e6edf7]">{c.name}</p>
-                  <p className="truncate text-[9px] text-[#8b95a8]">{c.role}</p>
-                </div>
-                <div
-                  className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                  style={{
-                    background: `${c.color}15`,
-                    color: c.color,
-                    border: `1px solid ${c.color}30`,
-                  }}
-                >
-                  {c.status}
-                </div>
-                <div className="shrink-0 text-sm font-bold" style={{ color: c.color }}>
-                  {c.score}%
-                </div>
-              </div>
-            ))}
-          </div>
+        {/* CTA */}
+        <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard"
+            className="hidden text-sm font-medium text-white/50 transition-colors hover:text-white sm:block"
+          >
+            Sign in
+          </Link>
+          <MagneticBtn href="/dashboard" variant="primary">
+            Launch App <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+          </MagneticBtn>
         </div>
       </div>
-    </div>
+    </nav>
   )
 }
 
-/* ── Logo strip ──────────────────────────────────────────────────────────── */
+// ── Hero ──────────────────────────────────────────────────────────────────────
+function HeroSection() {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const textRef = useRef<HTMLDivElement>(null)
+  const { scrollY } = useScroll()
+  const y = useTransform(scrollY, [0, 500], [0, -120])
+  const opacity = useTransform(scrollY, [0, 400], [1, 0])
+  const sceneY = useTransform(scrollY, [0, 600], [0, 80])
 
-function LogoStripSection() {
-  const companies = [
-    'Accenture',
-    'Stripe',
-    'Notion',
-    'Figma',
-    'Vercel',
-    'Linear',
-    'Atlassian',
-    'HubSpot',
-  ]
+  useEffect(() => {
+    if (!textRef.current) return
+    const els = textRef.current.querySelectorAll('[data-reveal]')
+    gsap.fromTo(els,
+      { y: 60, opacity: 0 },
+      {
+        y: 0, opacity: 1, duration: 1.1, stagger: 0.12,
+        ease: 'power4.out', delay: 0.5,
+      }
+    )
+  }, [])
 
   return (
-    <section className="border-y border-white/5 bg-white/[0.015] py-10">
-      <p className="mb-8 text-center text-xs font-semibold uppercase tracking-[0.2em] text-[#8b95a8]">
-        Trusted by HR teams at leading companies
-      </p>
-      <div className="relative overflow-hidden">
-        <motion.div
-          className="flex gap-16 whitespace-nowrap"
-          animate={{ x: ['0%', '-50%'] }}
-          transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
+    <section
+      ref={containerRef}
+      className="relative flex min-h-screen items-center justify-center overflow-hidden"
+    >
+      {/* Three.js canvas */}
+      <motion.div
+        style={{ y: sceneY }}
+        className="absolute inset-0 z-0"
+      >
+        <HeroScene />
+      </motion.div>
+
+      {/* Dark vignette radial overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 z-[1]"
+        style={{
+          background:
+            'radial-gradient(ellipse 70% 60% at 50% 50%, transparent 0%, #050508 70%)',
+        }}
+      />
+
+      {/* Text content */}
+      <motion.div
+        ref={textRef}
+        style={{ y, opacity }}
+        className="relative z-10 mx-auto max-w-5xl px-6 pb-24 pt-32 text-center"
+      >
+        {/* Badge */}
+        <div data-reveal className="mb-8 inline-flex items-center gap-2 rounded-full border border-[rgba(0,207,255,0.25)] bg-[rgba(0,207,255,0.06)] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#00cfff]">
+          <Sparkles className="h-3 w-3" />
+          AI-Powered Resume Intelligence
+          <Sparkles className="h-3 w-3" />
+        </div>
+
+        {/* Headline */}
+        <h1
+          data-reveal
+          className="mb-6 text-5xl font-black leading-[1.05] tracking-[-0.03em] sm:text-7xl lg:text-8xl"
         >
-          {[...companies, ...companies].map((name, i) => (
-            <span
-              key={`${name}-${i}`}
-              className="text-base font-bold tracking-tight text-[#8b95a8]/50"
-            >
-              {name}
+          Screen Talent at{' '}
+          <span
+            style={{
+              background: 'linear-gradient(135deg, #00cfff 0%, #7c3aed 50%, #00cfff 100%)',
+              backgroundSize: '200% auto',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              animation: 'gradientShift 4s linear infinite',
+            }}
+          >
+            Warp Speed
+          </span>
+        </h1>
+
+        {/* Subtitle */}
+        <p
+          data-reveal
+          className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-white/50 sm:text-xl"
+        >
+          Drop a resume. Paste a JD. Get an AI-powered ATS match score, skill gaps,
+          and hiring recommendation — in under 20 seconds.
+        </p>
+
+        {/* CTAs */}
+        <div data-reveal className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <MagneticBtn href="/dashboard" variant="primary" className="text-base px-8 py-4">
+            <Zap className="h-4 w-4" />
+            Start Screening Free
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </MagneticBtn>
+          <MagneticBtn href="#features" variant="ghost" className="text-base px-8 py-4">
+            See How It Works
+          </MagneticBtn>
+        </div>
+
+        {/* Social proof */}
+        <div data-reveal className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-white/30">
+          {['No credit card', 'Works on PDF, DOCX, TXT', 'Results in &lt;20s'].map((t) => (
+            <span key={t} className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-[#00cfff]" />
+              <span dangerouslySetInnerHTML={{ __html: t }} />
             </span>
           ))}
-        </motion.div>
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#090d16] to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#090d16] to-transparent" />
+        </div>
+      </motion.div>
+
+      {/* Scroll hint */}
+      <motion.div
+        className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2"
+        animate={{ y: [0, 8, 0] }}
+        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+      >
+        <ChevronDown className="h-5 w-5 text-white/20" />
+      </motion.div>
+    </section>
+  )
+}
+
+// ── Stat ticker ───────────────────────────────────────────────────────────────
+function LogoStripSection() {
+  const stats = [
+    { value: '10x', label: 'Faster screening' },
+    { value: '95%', label: 'Accuracy rate' },
+    { value: '< 20s', label: 'Per resume' },
+    { value: '3 formats', label: 'PDF · DOCX · TXT' },
+    { value: '0 setup', label: 'Just paste & drop' },
+  ]
+
+  return (
+    <section className="relative z-10 border-y border-white/[0.06] bg-[#050508]/60 py-6 backdrop-blur-sm">
+      <div className="mx-auto flex max-w-7xl items-center justify-around gap-8 px-6 flex-wrap">
+        {stats.map((s) => (
+          <div key={s.value} className="text-center">
+            <p
+              className="text-2xl font-black"
+              style={{
+                background: 'linear-gradient(90deg, #00cfff, #a78bfa)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              {s.value}
+            </p>
+            <p className="mt-0.5 text-xs text-white/35">{s.label}</p>
+          </div>
+        ))}
       </div>
     </section>
   )
 }
 
-/* ── Features ────────────────────────────────────────────────────────────── */
-
+// ── Feature cards ─────────────────────────────────────────────────────────────
 const FEATURES = [
   {
     icon: Brain,
-    title: 'AI-Powered Scoring',
-    description:
-      'Our LLM engine reads every resume contextually — not just keyword-matching. It understands experience depth, seniority signals, and skill transferability.',
-    color: '#00F0FF',
-    tag: 'Core',
-  },
-  {
-    icon: FileSearch,
-    title: 'Smart JD Parsing',
-    description:
-      'Paste any job description and NeonATS extracts must-have skills, nice-to-haves, and seniority benchmarks automatically.',
-    color: '#00FF66',
-    tag: 'Parsing',
+    title: 'AI Match Scoring',
+    desc: 'Weighted scoring rubric: 50% technical skills, 35% experience, 15% domain fit. Non-inflated, realistic scores every time.',
+    color: '#00cfff',
   },
   {
     icon: UploadCloud,
     title: 'Multi-Format Upload',
-    description:
-      'Upload PDFs, DOCX, DOC, and plain TXT files. The parser handles messy formats, OCR artifacts, and unusual layouts gracefully.',
-    color: '#00F0FF',
-    tag: 'Ingestion',
+    desc: 'Drop PDF, DOCX, or TXT resumes. Server-side text extraction means no data leaves without your consent.',
+    color: '#7c3aed',
   },
   {
     icon: BarChart3,
-    title: 'Analytics Dashboard',
-    description:
-      'Score distributions, pipeline funnels, and stage-by-stage breakdowns give recruiters real-time insight into candidate quality.',
-    color: '#FFB340',
-    tag: 'Analytics',
+    title: 'Pipeline Analytics',
+    desc: 'Score distribution charts, status breakdowns, and hiring funnel metrics — all in real time.',
+    color: '#00cfff',
+  },
+  {
+    icon: Zap,
+    title: 'Under 20 Seconds',
+    desc: 'From upload to full AI evaluation in under 20 seconds. No waiting, no bottlenecks.',
+    color: '#7c3aed',
   },
   {
     icon: ShieldCheck,
-    title: 'Bias-Aware Screening',
-    description:
-      'Built-in guardrails flag potential bias vectors. Scoring focuses purely on role-relevant signals — not demographics.',
-    color: '#00FF66',
-    tag: 'Ethics',
+    title: 'Rigorous & Fair',
+    desc: 'Skills gaps are verified against the JD — the AI never fabricates requirements. Transparent and auditable.',
+    color: '#00cfff',
   },
   {
-    icon: Wand2,
-    title: 'One-Click Decisions',
-    description:
-      'Shortlist, reject, or flag for review with a single click. Status changes sync instantly across your team.',
-    color: '#B388FF',
-    tag: 'Workflow',
+    icon: Globe,
+    title: 'Deploy Anywhere',
+    desc: 'Fully open-source, runs on Vercel + Neon Postgres. Your data, your infrastructure.',
+    color: '#7c3aed',
   },
 ]
 
 function FeaturesSection() {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!ref.current) return
+    const cards = ref.current.querySelectorAll('[data-card]')
+    gsap.fromTo(cards,
+      { y: 60, opacity: 0 },
+      {
+        y: 0, opacity: 1, stagger: 0.1, duration: 0.9, ease: 'power4.out',
+        scrollTrigger: { trigger: ref.current, start: 'top 80%' },
+      }
+    )
+  }, [])
+
   return (
-    <section id="features" className="px-6 py-24 md:px-12 lg:px-16">
-      <FadeIn className="mb-16 text-center">
-        <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-[#00F0FF]">
-          Features
-        </span>
-        <h2 className="text-3xl font-extrabold tracking-tight sm:text-5xl">
-          Everything your HR team needs
-        </h2>
-        <p className="mx-auto mt-4 max-w-2xl text-[#8b95a8]">
-          From upload to decision in seconds. NeonATS handles the heavy lifting so your recruiters
-          can focus on building great teams.
-        </p>
-      </FadeIn>
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {FEATURES.map((feature, i) => (
-          <FeatureCard key={feature.title} feature={feature} index={i} />
-        ))}
+    <section id="features" className="relative z-10 py-28" ref={ref}>
+      <div className="mx-auto max-w-7xl px-6 md:px-10">
+        <div className="mb-16 text-center">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-[#00cfff]">Features</p>
+          <h2 className="text-4xl font-black tracking-tight sm:text-5xl">
+            Built for modern{' '}
+            <span style={{ background: 'linear-gradient(90deg, #00cfff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              hiring teams
+            </span>
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-base text-white/40">
+            Every feature is designed to reduce time-to-hire without sacrificing accuracy or fairness.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map((f) => {
+            const Icon = f.icon
+            return (
+              <div
+                data-card
+                key={f.title}
+                className="group relative overflow-hidden rounded-2xl border border-white/[0.07] p-6 transition-all duration-500 hover:border-white/[0.14]"
+                style={{
+                  background: 'rgba(255,255,255,0.025)',
+                  backdropFilter: 'blur(12px)',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
+                }}
+              >
+                {/* Hover glow */}
+                <div
+                  className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                  style={{
+                    background: `radial-gradient(circle at top left, ${f.color}0f 0%, transparent 70%)`,
+                  }}
+                />
+                <div
+                  className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl"
+                  style={{
+                    background: `${f.color}15`,
+                    border: `1px solid ${f.color}30`,
+                    boxShadow: `0 0 20px ${f.color}20`,
+                  }}
+                >
+                  <Icon className="h-5 w-5" style={{ color: f.color }} />
+                </div>
+                <h3 className="mb-2 text-base font-semibold tracking-tight text-white/90">{f.title}</h3>
+                <p className="text-sm leading-relaxed text-white/40">{f.desc}</p>
+              </div>
+            )
+          })}
+        </div>
       </div>
     </section>
   )
 }
 
-function FeatureCard({
-  feature,
-  index,
-}: {
-  feature: (typeof FEATURES)[number]
-  index: number
-}) {
-  const Icon = feature.icon
-  const ref = useRef<HTMLDivElement>(null)
-  const inView = useInView(ref, { once: true, margin: '-60px' })
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 24 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay: index * 0.07, ease: 'easeOut' }}
-      className="group relative overflow-hidden rounded-2xl p-6 transition-colors duration-300"
-      style={{
-        background: 'rgba(18,24,38,0.6)',
-        border: '1px solid rgba(255,255,255,0.06)',
-        backdropFilter: 'blur(14px)',
-      }}
-      whileHover={{ borderColor: `${feature.color}40`, y: -3 }}
-    >
-      <div
-        className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-0 blur-3xl transition-opacity duration-300 group-hover:opacity-30"
-        style={{ background: feature.color }}
-      />
-      <span
-        className="mb-4 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
-        style={{
-          background: `${feature.color}15`,
-          color: feature.color,
-          border: `1px solid ${feature.color}30`,
-        }}
-      >
-        {feature.tag}
-      </span>
-      <div
-        className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl"
-        style={{
-          background: `${feature.color}15`,
-          border: `1px solid ${feature.color}30`,
-        }}
-      >
-        <Icon className="h-5 w-5" style={{ color: feature.color }} />
-      </div>
-      <h3 className="mb-2 text-base font-bold text-[#e6edf7]">{feature.title}</h3>
-      <p className="text-sm leading-relaxed text-[#8b95a8]">{feature.description}</p>
-    </motion.div>
-  )
-}
-
-/* ── How It Works ────────────────────────────────────────────────────────── */
-
-const STEPS = [
-  {
-    number: '01',
-    icon: FileSearch,
-    title: 'Paste your Job Description',
-    description:
-      'Drop in the full job description or just the key requirements. Our parser extracts skills, seniority, and must-haves in milliseconds.',
-    color: '#00F0FF',
-  },
-  {
-    number: '02',
-    icon: UploadCloud,
-    title: 'Upload Candidate Resumes',
-    description:
-      'Drag and drop PDF, DOCX, or TXT resumes — one at a time or in bulk. We handle any layout or formatting.',
-    color: '#00FF66',
-  },
-  {
-    number: '03',
-    icon: Brain,
-    title: 'AI Analyzes & Scores',
-    description:
-      'Our AI cross-references every candidate against the JD. It scores overall fit, identifies skill gaps, and produces a human-readable verdict.',
-    color: '#FFB340',
-  },
-  {
-    number: '04',
-    icon: BarChart3,
-    title: 'Review & Decide',
-    description:
-      'Candidates are ranked top-to-bottom. Deep-dive into any profile, see AI reasoning, and move candidates through your pipeline with one click.',
-    color: '#B388FF',
-  },
-]
-
+// ── How it works ──────────────────────────────────────────────────────────────
 function HowItWorksSection() {
+  const steps = [
+    { n: '01', title: 'Paste your JD', desc: 'Drop the job description into the editor. Or use our sample Senior Frontend Engineer JD.' },
+    { n: '02', title: 'Upload the resume', desc: 'Drag & drop a PDF, DOCX or TXT file. Text is extracted server-side instantly.' },
+    { n: '03', title: 'AI analysis runs', desc: 'Our LLM evaluates skills, experience years, role alignment, and outputs a weighted score.' },
+    { n: '04', title: 'Review & decide', desc: 'See the full breakdown, skill gaps, key strengths, and AI recommendation in the dashboard.' },
+  ]
+
   return (
-    <section id="how-it-works" className="px-6 py-24 md:px-12 lg:px-16">
-      <FadeIn className="mb-16 text-center">
-        <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-[#00FF66]">
-          How It Works
-        </span>
-        <h2 className="text-3xl font-extrabold tracking-tight sm:text-5xl">
-          From upload to shortlist in{' '}
-          <span className="gradient-text-cyan">30 seconds</span>
-        </h2>
-        <p className="mx-auto mt-4 max-w-xl text-[#8b95a8]">
-          Four simple steps replace hours of manual resume sorting.
-        </p>
-      </FadeIn>
-      <div className="relative mx-auto max-w-4xl">
-        <div className="absolute left-8 top-0 h-full w-px bg-gradient-to-b from-[#00F0FF] via-[#00FF66] to-[#B388FF] opacity-20 md:left-1/2" />
-        <div className="flex flex-col gap-12">
-          {STEPS.map((step, i) => (
-            <StepCard key={step.number} step={step} index={i} />
+    <section id="how-it-works" className="relative z-10 py-28">
+      <div className="mx-auto max-w-7xl px-6 md:px-10">
+        <div className="mb-16 text-center">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-[#00cfff]">Process</p>
+          <h2 className="text-4xl font-black tracking-tight sm:text-5xl">How it works</h2>
+        </div>
+        <div className="relative grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Connector line */}
+          <div className="absolute left-8 top-10 hidden h-px w-[calc(100%-4rem)] bg-gradient-to-r from-[#00cfff]/20 via-[#7c3aed]/20 to-transparent lg:block" />
+          {steps.map((s, i) => (
+            <motion.div
+              key={s.n}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: i * 0.12, ease: [0.22, 0.6, 0.36, 1] }}
+              viewport={{ once: true }}
+              className="relative rounded-2xl border border-white/[0.07] bg-white/[0.025] p-6 backdrop-blur-sm"
+            >
+              <div
+                className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl text-sm font-black"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(0,207,255,0.15), rgba(124,58,237,0.15))',
+                  border: '1px solid rgba(0,207,255,0.25)',
+                  color: '#00cfff',
+                }}
+              >
+                {s.n}
+              </div>
+              <h3 className="mb-2 text-base font-semibold text-white/90">{s.title}</h3>
+              <p className="text-sm leading-relaxed text-white/40">{s.desc}</p>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -642,477 +483,291 @@ function HowItWorksSection() {
   )
 }
 
-function StepCard({
-  step,
-  index,
-}: {
-  step: (typeof STEPS)[number]
-  index: number
-}) {
-  const Icon = step.icon
-  const ref = useRef<HTMLDivElement>(null)
-  const inView = useInView(ref, { once: true, margin: '-80px' })
-  const isEven = index % 2 === 0
+// ── Stats ─────────────────────────────────────────────────────────────────────
+function StatsSection() {
+  const stats = [
+    { value: '10,000+', label: 'Resumes analyzed' },
+    { value: '95%', label: 'Score accuracy' },
+    { value: '4.9 / 5', label: 'Recruiter rating' },
+    { value: '87%', label: 'Time saved per hire' },
+  ]
 
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, x: isEven ? -30 : 30 }}
-      animate={inView ? { opacity: 1, x: 0 } : {}}
-      transition={{ duration: 0.6, ease: 'easeOut' }}
-      className={`relative flex items-center gap-8 ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'}`}
-    >
-      <div className="relative z-10 flex shrink-0 flex-col items-center">
+    <section className="relative z-10 py-24">
+      <div className="mx-auto max-w-7xl px-6 md:px-10">
         <div
-          className="flex h-16 w-16 items-center justify-center rounded-2xl text-xl font-extrabold"
+          className="relative overflow-hidden rounded-3xl px-8 py-16"
           style={{
-            background: `${step.color}15`,
-            border: `2px solid ${step.color}50`,
-            color: step.color,
-            boxShadow: `0 0 24px ${step.color}25`,
+            background: 'linear-gradient(135deg, rgba(0,207,255,0.06) 0%, rgba(124,58,237,0.06) 100%)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            backdropFilter: 'blur(24px)',
           }}
         >
-          {step.number}
-        </div>
-      </div>
-      <div
-        className="flex-1 rounded-2xl p-6"
-        style={{
-          background: 'rgba(18,24,38,0.6)',
-          border: `1px solid ${step.color}20`,
-          backdropFilter: 'blur(14px)',
-        }}
-      >
-        <div className="mb-3 flex items-center gap-3">
-          <div
-            className="flex h-9 w-9 items-center justify-center rounded-xl"
-            style={{ background: `${step.color}15` }}
-          >
-            <Icon className="h-4 w-4" style={{ color: step.color }} />
+          {/* BG decoration */}
+          <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full"
+            style={{ background: 'radial-gradient(circle, rgba(0,207,255,0.12) 0%, transparent 70%)' }} />
+          <div className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full"
+            style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)' }} />
+
+          <div className="relative grid grid-cols-2 gap-8 sm:grid-cols-4">
+            {stats.map((s, i) => (
+              <motion.div
+                key={s.label}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                viewport={{ once: true }}
+                className="text-center"
+              >
+                <p
+                  className="text-4xl font-black tracking-tight sm:text-5xl"
+                  style={{
+                    background: 'linear-gradient(135deg, #00cfff, #a78bfa)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  {s.value}
+                </p>
+                <p className="mt-2 text-sm text-white/40">{s.label}</p>
+              </motion.div>
+            ))}
           </div>
-          <h3 className="text-base font-bold text-[#e6edf7]">{step.title}</h3>
         </div>
-        <p className="text-sm leading-relaxed text-[#8b95a8]">{step.description}</p>
-      </div>
-    </motion.div>
-  )
-}
-
-/* ── Stats bar ───────────────────────────────────────────────────────────── */
-
-const STATS = [
-  { value: '10x', label: 'Faster screening', color: '#00F0FF' },
-  { value: '94%', label: 'Accuracy vs. expert review', color: '#00FF66' },
-  { value: '3.2M+', label: 'Resumes processed', color: '#FFB340' },
-  { value: '4.9★', label: 'Average rating', color: '#B388FF' },
-]
-
-function StatsSection() {
-  return (
-    <section className="border-y border-white/5 bg-white/[0.015] px-6 py-20 md:px-12 lg:px-16">
-      <div className="mx-auto grid max-w-5xl gap-8 sm:grid-cols-2 lg:grid-cols-4">
-        {STATS.map((s, i) => (
-          <FadeIn key={s.label} delay={i * 0.1} className="text-center">
-            <p
-              className="text-4xl font-extrabold tracking-tight sm:text-5xl"
-              style={{ color: s.color, textShadow: `0 0 20px ${s.color}40` }}
-            >
-              {s.value}
-            </p>
-            <p className="mt-2 text-sm text-[#8b95a8]">{s.label}</p>
-          </FadeIn>
-        ))}
       </div>
     </section>
   )
 }
 
-/* ── Testimonials ────────────────────────────────────────────────────────── */
-
+// ── Testimonials ──────────────────────────────────────────────────────────────
 const TESTIMONIALS = [
-  {
-    name: 'Jessica Park',
-    role: 'Head of Talent, FinTech Co.',
-    avatar: 'JP',
-    color: '#00F0FF',
-    quote:
-      'NeonATS cut our time-to-shortlist from 3 days to under an hour. The AI reasoning is genuinely impressive — it catches nuances our human reviewers miss.',
-    stars: 5,
-  },
-  {
-    name: 'Tom Bradley',
-    role: 'VP Engineering, SaaS Startup',
-    avatar: 'TB',
-    color: '#00FF66',
-    quote:
-      'We tripled our hiring pipeline without adding recruiters. The score breakdowns give our HRs confidence, and candidates love the fast turnaround.',
-    stars: 5,
-  },
-  {
-    name: 'Ananya Sharma',
-    role: 'Talent Acquisition Lead',
-    avatar: 'AS',
-    color: '#FFB340',
-    quote:
-      "The bias-awareness feature alone sold me. We've seen more diverse shortlists since switching, and the data backs it up every month.",
-    stars: 5,
-  },
+  { name: 'Sarah Mitchell', role: 'Head of Talent, Stripe-backed startup', text: 'We cut resume review time from 3 hours to 20 minutes. The AI scoring is remarkably accurate — no inflated scores.' },
+  { name: 'James Okafor', role: 'Senior Recruiter, Tech Agency', text: "The skill gap analysis alone saves me 2+ hours per hire. It surfaces exactly what's missing without hallucinating requirements." },
+  { name: 'Priya Nair', role: 'Engineering Manager', text: "Finally an ATS that doesn't just keyword-match. The weighted scoring actually reflects what matters for senior engineering roles." },
 ]
 
 function TestimonialsSection() {
   return (
-    <section className="px-6 py-24 md:px-12 lg:px-16">
-      <FadeIn className="mb-16 text-center">
-        <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-[#FFB340]">
-          Testimonials
-        </span>
-        <h2 className="text-3xl font-extrabold tracking-tight sm:text-5xl">
-          Loved by recruiting teams worldwide
-        </h2>
-      </FadeIn>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {TESTIMONIALS.map((t, i) => (
-          <FadeIn key={t.name} delay={i * 0.1}>
-            <div
-              className="flex h-full flex-col gap-4 rounded-2xl p-6"
-              style={{
-                background: 'rgba(18,24,38,0.6)',
-                border: `1px solid ${t.color}20`,
-                backdropFilter: 'blur(14px)',
-              }}
+    <section className="relative z-10 py-24">
+      <div className="mx-auto max-w-7xl px-6 md:px-10">
+        <div className="mb-14 text-center">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-[#00cfff]">Reviews</p>
+          <h2 className="text-4xl font-black tracking-tight sm:text-5xl">Loved by recruiters</h2>
+        </div>
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+          {TESTIMONIALS.map((t, i) => (
+            <motion.div
+              key={t.name}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: i * 0.1 }}
+              viewport={{ once: true }}
+              className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-6 backdrop-blur-sm"
             >
-              <div className="flex gap-0.5">
-                {Array.from({ length: t.stars }).map((_, j) => (
-                  <Star key={j} className="h-4 w-4 fill-[#FFB340] text-[#FFB340]" />
+              <div className="mb-4 flex gap-0.5">
+                {[...Array(5)].map((_, j) => (
+                  <Star key={j} className="h-3.5 w-3.5 fill-[#00cfff] text-[#00cfff]" />
                 ))}
               </div>
-              <p className="flex-1 text-sm leading-relaxed text-[#c8d1df]">
-                &ldquo;{t.quote}&rdquo;
-              </p>
-              <div className="flex items-center gap-3">
-                <div
-                  className="flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold"
-                  style={{
-                    background: `${t.color}20`,
-                    color: t.color,
-                    border: `1px solid ${t.color}30`,
-                  }}
-                >
-                  {t.avatar}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[#e6edf7]">{t.name}</p>
-                  <p className="text-xs text-[#8b95a8]">{t.role}</p>
-                </div>
+              <p className="mb-5 text-sm leading-relaxed text-white/60">&ldquo;{t.text}&rdquo;</p>
+              <div>
+                <p className="text-sm font-semibold text-white/90">{t.name}</p>
+                <p className="text-xs text-white/35">{t.role}</p>
               </div>
-            </div>
-          </FadeIn>
-        ))}
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   )
 }
 
-/* ── Pricing ─────────────────────────────────────────────────────────────── */
-
-const PLANS = [
-  {
-    name: 'Starter',
-    price: 'Free',
-    period: '',
-    color: '#8b95a8',
-    highlight: false,
-    features: [
-      '50 resumes / month',
-      '1 active job description',
-      'Basic AI scoring',
-      'CSV export',
-      'Community support',
-    ],
-  },
-  {
-    name: 'Pro',
-    price: '$49',
-    period: '/mo',
-    color: '#00F0FF',
-    highlight: true,
-    features: [
-      'Unlimited resumes',
-      '10 active job descriptions',
-      'Advanced AI + bias guardrails',
-      'Analytics dashboard',
-      'API access',
-      'Priority support',
-    ],
-  },
-  {
-    name: 'Enterprise',
-    price: 'Custom',
-    period: '',
-    color: '#00FF66',
-    highlight: false,
-    features: [
-      'Everything in Pro',
-      'Unlimited JDs',
-      'SSO / SAML',
-      'Dedicated instance',
-      'SLA guarantee',
-      'Onboarding & training',
-    ],
-  },
-]
-
+// ── Pricing ───────────────────────────────────────────────────────────────────
 function PricingSection() {
+  const plans = [
+    {
+      name: 'Free', price: '$0', period: 'forever',
+      features: ['Unlimited uploads', 'AI match scoring', 'PDF · DOCX · TXT', 'Pipeline dashboard'],
+      cta: 'Get started', popular: false,
+    },
+    {
+      name: 'Pro', price: '$29', period: 'per month',
+      features: ['Everything in Free', 'Priority AI processing', 'Team collaboration', 'Export to CSV', 'API access'],
+      cta: 'Start free trial', popular: true,
+    },
+    {
+      name: 'Enterprise', price: 'Custom', period: 'contact us',
+      features: ['Everything in Pro', 'Dedicated instance', 'SSO / SAML', 'Custom AI tuning', 'SLA guarantee'],
+      cta: 'Contact sales', popular: false,
+    },
+  ]
+
   return (
-    <section id="pricing" className="px-6 py-24 md:px-12 lg:px-16">
-      <FadeIn className="mb-16 text-center">
-        <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-[#B388FF]">
-          Pricing
-        </span>
-        <h2 className="text-3xl font-extrabold tracking-tight sm:text-5xl">
-          Simple, transparent pricing
-        </h2>
-        <p className="mx-auto mt-4 max-w-lg text-[#8b95a8]">
-          Start free, scale as you grow. No hidden fees, no surprise bills.
-        </p>
-      </FadeIn>
-      <div className="mx-auto grid max-w-5xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {PLANS.map((plan, i) => (
-          <FadeIn key={plan.name} delay={i * 0.1}>
-            <div
-              className="relative flex h-full flex-col rounded-2xl p-6"
+    <section id="pricing" className="relative z-10 py-24">
+      <div className="mx-auto max-w-7xl px-6 md:px-10">
+        <div className="mb-14 text-center">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-[#00cfff]">Pricing</p>
+          <h2 className="text-4xl font-black tracking-tight sm:text-5xl">Simple, transparent pricing</h2>
+        </div>
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+          {plans.map((p, i) => (
+            <motion.div
+              key={p.name}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: i * 0.1 }}
+              viewport={{ once: true }}
+              className="relative overflow-hidden rounded-2xl border p-7"
               style={{
-                background: plan.highlight
-                  ? 'linear-gradient(160deg, rgba(0,240,255,0.07) 0%, rgba(0,255,102,0.04) 100%)'
-                  : 'rgba(18,24,38,0.6)',
-                border: plan.highlight
-                  ? '1px solid rgba(0,240,255,0.35)'
-                  : '1px solid rgba(255,255,255,0.06)',
-                boxShadow: plan.highlight ? '0 0 40px rgba(0,240,255,0.1)' : 'none',
-                backdropFilter: 'blur(14px)',
+                background: p.popular
+                  ? 'linear-gradient(135deg, rgba(0,207,255,0.08), rgba(124,58,237,0.08))'
+                  : 'rgba(255,255,255,0.025)',
+                border: p.popular ? '1px solid rgba(0,207,255,0.3)' : '1px solid rgba(255,255,255,0.07)',
+                backdropFilter: 'blur(16px)',
+                boxShadow: p.popular ? '0 0 40px rgba(0,207,255,0.1)' : 'none',
               }}
             >
-              {plan.highlight && (
-                <div
-                  className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full px-4 py-1 text-[10px] font-bold uppercase tracking-wider text-[#05070d]"
-                  style={{ background: 'linear-gradient(135deg, #00f0ff, #00ff66)' }}
+              {p.popular && (
+                <span
+                  className="absolute right-5 top-5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-black"
+                  style={{ background: 'linear-gradient(90deg, #00cfff, #7c3aed)' }}
                 >
                   Most Popular
-                </div>
+                </span>
               )}
-              <div className="mb-6">
-                <p
-                  className="text-xs font-semibold uppercase tracking-widest"
-                  style={{ color: plan.color }}
-                >
-                  {plan.name}
-                </p>
-                <div className="mt-2 flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-[#e6edf7]">{plan.price}</span>
-                  <span className="text-sm text-[#8b95a8]">{plan.period}</span>
-                </div>
-              </div>
-              <ul className="mb-8 flex flex-col gap-3">
-                {plan.features.map((f) => (
-                  <li key={f} className="flex items-center gap-2.5 text-sm text-[#c8d1df]">
-                    <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: plan.color }} />
+              <p className="mb-1 text-sm font-semibold text-white/50">{p.name}</p>
+              <p className="mb-1">
+                <span className="text-4xl font-black text-white">{p.price}</span>
+                <span className="ml-1 text-sm text-white/35">/ {p.period}</span>
+              </p>
+              <div className="my-6 h-px bg-white/[0.06]" />
+              <ul className="mb-7 space-y-2.5">
+                {p.features.map((f) => (
+                  <li key={f} className="flex items-center gap-2.5 text-sm text-white/60">
+                    <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-[#00cfff]" />
                     {f}
                   </li>
                 ))}
               </ul>
-              <div className="mt-auto">
-                <Link
-                  href="/dashboard"
-                  className="flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold transition-all duration-200 hover:opacity-90"
-                  style={
-                    plan.highlight
-                      ? {
-                          background: 'linear-gradient(135deg, #00f0ff, #00cc88)',
-                          color: '#05070d',
-                          boxShadow: '0 0 20px rgba(0,240,255,0.3)',
-                        }
-                      : {
-                          background: 'rgba(255,255,255,0.04)',
-                          border: `1px solid ${plan.color}30`,
-                          color: plan.color,
-                        }
-                  }
-                >
-                  {plan.name === 'Enterprise' ? 'Contact Sales' : 'Get started'}
-                  <ChevronRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </div>
-          </FadeIn>
-        ))}
+              <a
+                href="/dashboard"
+                className="block w-full rounded-xl py-3 text-center text-sm font-semibold transition-all duration-300"
+                style={
+                  p.popular
+                    ? {
+                        background: 'linear-gradient(135deg, #00cfff, #7c3aed)',
+                        color: '#000',
+                        boxShadow: '0 0 24px rgba(0,207,255,0.3)',
+                      }
+                    : {
+                        background: 'rgba(255,255,255,0.06)',
+                        color: 'rgba(255,255,255,0.7)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                      }
+                }
+              >
+                {p.cta}
+              </a>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   )
 }
 
-/* ── CTA banner ──────────────────────────────────────────────────────────── */
-
+// ── CTA ───────────────────────────────────────────────────────────────────────
 function CtaSection() {
   return (
-    <section className="px-6 pb-24 md:px-12 lg:px-16">
-      <FadeIn>
-        <div
-          className="relative overflow-hidden rounded-3xl px-8 py-16 text-center"
-          style={{
-            background:
-              'linear-gradient(135deg, rgba(0,240,255,0.1) 0%, rgba(0,255,102,0.06) 100%)',
-            border: '1px solid rgba(0,240,255,0.25)',
-            boxShadow: '0 0 80px rgba(0,240,255,0.1)',
-          }}
+    <section className="relative z-10 py-32">
+      <div className="mx-auto max-w-4xl px-6 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
         >
-          <div
-            className="pointer-events-none absolute -left-20 -top-20 h-64 w-64 rounded-full blur-3xl"
-            style={{ background: 'rgba(0,240,255,0.12)' }}
-          />
-          <div
-            className="pointer-events-none absolute -bottom-20 -right-20 h-64 w-64 rounded-full blur-3xl"
-            style={{ background: 'rgba(0,255,102,0.1)' }}
-          />
-          <div className="relative">
-            <div
-              className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl"
-              style={{
-                background: 'rgba(0,240,255,0.1)',
-                border: '1px solid rgba(0,240,255,0.4)',
-                boxShadow: '0 0 32px rgba(0,240,255,0.25)',
-              }}
-            >
-              <Zap className="h-8 w-8 text-[#00F0FF]" />
-            </div>
-            <h2 className="mb-4 text-3xl font-extrabold tracking-tight sm:text-5xl">
-              Ready to transform your hiring?
-            </h2>
-            <p className="mx-auto mb-10 max-w-lg text-[#8b95a8]">
-              Join thousands of HR teams using NeonATS to find their best candidates faster,
-              smarter, and more fairly.
-            </p>
-            <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-2.5 rounded-2xl px-8 py-4 text-base font-bold text-[#05070d] hover:opacity-90"
-                style={{
-                  background: 'linear-gradient(135deg, #00f0ff 0%, #00cc88 100%)',
-                  boxShadow: '0 0 32px rgba(0,240,255,0.4)',
-                }}
-              >
-                <Sparkles className="h-5 w-5" />
-                Start for Free
-                <ArrowRight className="h-5 w-5" />
-              </Link>
-              <a
-                href="mailto:hello@neonats.app"
-                className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-8 py-4 text-base font-semibold text-[#e6edf7] transition-all hover:border-white/20 hover:bg-white/[0.07]"
-              >
-                Talk to Sales
-              </a>
-            </div>
-          </div>
-        </div>
-      </FadeIn>
+          <h2 className="mb-6 text-5xl font-black leading-tight tracking-tight sm:text-6xl">
+            Start screening{' '}
+            <span style={{ background: 'linear-gradient(90deg, #00cfff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              smarter
+            </span>{' '}
+            today
+          </h2>
+          <p className="mx-auto mb-10 max-w-xl text-lg text-white/40">
+            No setup. No credit card. Just drop a resume and experience AI hiring intelligence.
+          </p>
+          <MagneticBtn href="/dashboard" variant="primary" className="text-base px-10 py-4">
+            <Zap className="h-4 w-4" />
+            Launch NeonATS Free
+            <ArrowRight className="h-4 w-4" />
+          </MagneticBtn>
+        </motion.div>
+      </div>
     </section>
   )
 }
 
-/* ── Footer ──────────────────────────────────────────────────────────────── */
-
+// ── Footer ────────────────────────────────────────────────────────────────────
 function Footer() {
   return (
-    <footer className="border-t border-white/5 bg-[#0b1019]/80 px-6 py-12 md:px-12 lg:px-16">
-      <div className="mx-auto max-w-7xl">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="col-span-1 sm:col-span-2 lg:col-span-1">
-            <div className="mb-4 flex items-center gap-2.5">
-              <div
-                className="flex h-8 w-8 items-center justify-center rounded-lg"
-                style={{
-                  background: 'rgba(0,240,255,0.1)',
-                  border: '1px solid rgba(0,240,255,0.3)',
-                }}
-              >
-                <Radar className="h-4 w-4 text-[#00F0FF]" />
-              </div>
-              <span className="gradient-text-cyan text-base font-bold">NeonATS</span>
-            </div>
-            <p className="mb-4 text-sm leading-relaxed text-[#8b95a8]">
-              AI-powered applicant tracking built for the modern recruiter. Screen smarter. Hire
-              faster.
-            </p>
-            <div className="flex gap-3">
-              {[Globe, Github, Twitter].map((Icon, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-[#8b95a8] transition-all hover:border-white/20 hover:text-[#e6edf7]"
-                >
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
-            </div>
-          </div>
-          {[
-            { title: 'Product', links: ['Features', 'Pricing', 'Changelog', 'Roadmap'] },
-            { title: 'Company', links: ['About', 'Blog', 'Careers', 'Press'] },
-            { title: 'Legal', links: ['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'GDPR'] },
-          ].map((col) => (
-            <div key={col.title}>
-              <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#8b95a8]">
-                {col.title}
-              </p>
-              <ul className="flex flex-col gap-2.5">
-                {col.links.map((link) => (
-                  <li key={link}>
-                    <a
-                      href="#"
-                      className="text-sm text-[#8b95a8] transition-colors hover:text-[#e6edf7]"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+    <footer className="relative z-10 border-t border-white/[0.06] bg-[#050508]/80 py-10 backdrop-blur-sm">
+      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
+        <div className="flex items-center gap-2.5">
+          <Radar className="h-4 w-4 text-[#00cfff]" />
+          <span
+            className="text-sm font-bold"
+            style={{ background: 'linear-gradient(90deg, #00cfff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+          >
+            NeonATS
+          </span>
+          <span className="text-xs text-white/25">AI Resume ATS</span>
         </div>
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-8 text-xs text-[#8b95a8] sm:flex-row">
-          <p>&copy; 2026 NeonATS. All rights reserved.</p>
-          <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#00FF66] shadow-[0_0_6px_#00FF66]" />
-            All systems operational
-          </div>
+        <p className="text-xs text-white/25">© 2026 NeonATS. Built with Next.js · Three.js · Neon · z-ai SDK</p>
+        <div className="flex items-center gap-4">
+          <a href="#" className="text-white/25 transition-colors hover:text-white/60"><Globe className="h-4 w-4" /></a>
+          <a href="#" className="text-white/25 transition-colors hover:text-white/60"><Github className="h-4 w-4" /></a>
+          <a href="#" className="text-white/25 transition-colors hover:text-white/60"><Twitter className="h-4 w-4" /></a>
         </div>
       </div>
     </footer>
   )
 }
 
-/* ── Utility: FadeIn ─────────────────────────────────────────────────────── */
-
-function FadeIn({
-  children,
-  className,
-  delay = 0,
-}: {
-  children: React.ReactNode
-  className?: string
-  delay?: number
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-  const inView = useInView(ref, { once: true, margin: '-60px' })
-
+// ── Root ──────────────────────────────────────────────────────────────────────
+export default function LandingPage() {
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 20 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.55, delay, ease: 'easeOut' }}
-      className={className}
+    <div
+      className="relative min-h-screen overflow-x-hidden text-[#e8edf5]"
+      style={{ background: '#050508' }}
     >
-      {children}
-    </motion.div>
+      {/* Global gradient shift animation */}
+      <style>{`
+        @keyframes gradientShift {
+          0%   { background-position: 0% 50% }
+          50%  { background-position: 100% 50% }
+          100% { background-position: 0% 50% }
+        }
+        @keyframes shimmer {
+          0%   { transform: translateX(-100%) }
+          100% { transform: translateX(400%) }
+        }
+        .animate-shimmer { animation: shimmer 1.8s infinite }
+        @media (prefers-reduced-motion: reduce) {
+          * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important }
+        }
+      `}</style>
+
+      <Navbar />
+      <HeroSection />
+      <LogoStripSection />
+      <FeaturesSection />
+      <HowItWorksSection />
+      <StatsSection />
+      <TestimonialsSection />
+      <PricingSection />
+      <CtaSection />
+      <Footer />
+    </div>
   )
 }
