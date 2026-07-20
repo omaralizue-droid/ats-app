@@ -226,7 +226,7 @@ export default function Home() {
         <ThreeCanvas particleCount={60} variant="sparse" />
       </div>
 
-      <div className="flex flex-1 relative z-10">
+      <div className="flex flex-col md:flex-row flex-1 relative z-10">
         <Sidebar activeView={activeView} onNavigate={setActiveView} stats={stats} />
 
         {/* Main content grid */}

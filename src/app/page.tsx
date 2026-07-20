@@ -51,31 +51,29 @@ function PreviewScoreBadge({ score }: { score: number }) {
 
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   
   // Custom cursor states
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 })
   const [cursorHover, setCursorHover] = useState(false)
 
-  // Track scroll details for scroll-driven page elements
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"]
-  })
-
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.25], [1, 0])
-  const heroScale = useTransform(scrollYProgress, [0, 0.25], [1, 0.95])
-  const previewTranslateY = useTransform(scrollYProgress, [0.15, 0.45], [100, 0])
-  const previewOpacity = useTransform(scrollYProgress, [0.15, 0.4], [0, 1])
-
   useEffect(() => {
     setMounted(true)
+    setIsDesktop(window.innerWidth >= 768)
 
     const handleMouseMove = (e: MouseEvent) => {
       setCursorPos({ x: e.clientX, y: e.clientY })
     }
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 768)
+    }
     window.addEventListener('mousemove', handleMouseMove, { passive: true })
-    return () => window.removeEventListener('mousemove', handleMouseMove)
+    window.addEventListener('resize', handleResize, { passive: true })
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('resize', handleResize)
+    }
   }, [])
 
   // Interactive 3D tilt effect on product mockup preview
@@ -83,7 +81,7 @@ export default function LandingPage() {
   const [tiltStyle, setTiltStyle] = useState("")
 
   const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return
+    if (!cardRef.current || !isDesktop) return
     const rect = cardRef.current.getBoundingClientRect()
     const x = e.clientX - rect.left - rect.width / 2
     const y = e.clientY - rect.top - rect.height / 2
@@ -99,27 +97,34 @@ export default function LandingPage() {
   if (!mounted) return null
 
   return (
-    <div ref={containerRef} className="relative min-h-[250vh] bg-[#03030c] text-[#f8fafc] selection:bg-[#00f0ff]/20 selection:text-[#00f0ff] overflow-x-hidden">
+    <div ref={containerRef} className="relative min-h-screen bg-[#03030c] text-[#f8fafc] selection:bg-[#00f0ff]/20 selection:text-[#00f0ff] overflow-x-hidden">
       
-      {/* Custom Hover Particle Trail Cursor */}
-      <div
-        className="pointer-events-none fixed z-[999] hidden -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#00f0ff]/30 bg-[#00f0ff]/5 transition-all duration-300 ease-out md:block"
-        style={{
-          left: `${cursorPos.x}px`,
-          top: `${cursorPos.y}px`,
-          width: cursorHover ? '64px' : '24px',
-          height: cursorHover ? '64px' : '24px',
-          boxShadow: cursorHover ? '0 0 20px rgba(0, 240, 255, 0.4)' : '0 0 8px rgba(0, 240, 255, 0.1)',
-        }}
-      />
+      {/* Ambient background glow for mobile/desktop */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-[#03030c] to-[#03030c] pointer-events-none z-0" />
 
-      {/* 3D WebGL Background Scene */}
-      <div className="fixed inset-0 z-0 h-screen w-screen overflow-hidden">
-        <CinematicScene isMobile={false} />
-      </div>
+      {/* Custom Hover Particle Trail Cursor */}
+      {isDesktop && (
+        <div
+          className="pointer-events-none fixed z-[999] hidden -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#00f0ff]/30 bg-[#00f0ff]/5 transition-all duration-300 ease-out md:block"
+          style={{
+            left: `${cursorPos.x}px`,
+            top: `${cursorPos.y}px`,
+            width: cursorHover ? '64px' : '24px',
+            height: cursorHover ? '64px' : '24px',
+            boxShadow: cursorHover ? '0 0 20px rgba(0, 240, 255, 0.4)' : '0 0 8px rgba(0, 240, 255, 0.1)',
+          }}
+        />
+      )}
+
+      {/* 3D WebGL Background Scene (Desktop only to prevent lag on mobile) */}
+      {isDesktop && (
+        <div className="fixed inset-0 z-0 h-screen w-screen overflow-hidden opacity-30 pointer-events-none">
+          <CinematicScene isMobile={true} />
+        </div>
+      )}
 
       {/* Global Glass Navigation */}
-      <nav className="fixed top-0 z-50 w-full border-b border-white/[0.03] bg-zinc-950/25 backdrop-blur-xl">
+      <nav className="fixed top-0 z-50 w-full border-b border-white/[0.03] bg-zinc-950/20 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded bg-blue-500/10 border border-blue-500/20 shadow-sm">
@@ -141,8 +146,10 @@ export default function LandingPage() {
 
       {/* Section 1: Hero Scene Overlay */}
       <motion.section
-        style={{ opacity: heroOpacity, scale: heroScale }}
-        className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 pt-24 text-center"
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: 'easeOut' }}
+        className="relative z-10 flex min-h-[90vh] flex-col items-center justify-center px-6 pt-28 text-center"
       >
         <div className="flex flex-col items-center max-w-5xl">
           {/* Tag banner */}
@@ -209,18 +216,21 @@ export default function LandingPage() {
         </div>
       </motion.section>
 
-      {/* Section 2: Scroll Storytelling & Mockup Card */}
+      {/* Section 2: Sandbox Preview */}
       <motion.section
         id="layout-preview"
-        style={{ opacity: previewOpacity, y: previewTranslateY }}
-        className="relative z-10 mx-auto max-w-5xl px-6 py-28"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.8, ease: 'easeOut' }}
+        className="relative z-10 mx-auto max-w-5xl px-6 py-20"
       >
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center rounded-lg bg-blue-500/10 border border-blue-500/20 p-2 mb-3">
             <Sparkles className="h-5 w-5 text-blue-400" />
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Handcrafted Scorecard Interface</h2>
-          <p className="text-xs text-zinc-500 mt-1 max-w-md mx-auto">Tactile components react to cursor position and scroll-driven depth transitions.</p>
+          <p className="text-xs text-zinc-500 mt-1.5 max-w-md mx-auto">Tactile glass indicators displaying real-time metrics data screening matches.</p>
         </div>
 
         {/* 3D tilt widget card wrapper */}

@@ -143,7 +143,7 @@ function StatCard({ stat, index, max }: { stat: StatDef; index: number; max: num
         </div>
 
         <div
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded"
+          className="hidden sm:flex h-8 w-8 shrink-0 items-center justify-center rounded"
           style={{
             background: `${stat.color}10`,
             border: `1px solid ${stat.color}20`,
