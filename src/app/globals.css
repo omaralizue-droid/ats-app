@@ -45,57 +45,60 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* ── Cinematic dark theme — matches landing page ────────────────────────── */
+/* ── Premium B2B SaaS Zinc Theme ────────────────────────────────────────── */
 :root {
-  --radius: 0.75rem;
+  --radius: 0.5rem;
 
-  /* Cinematic accent palette */
-  --electric-blue: #4090ff;
-  --deep-violet: #8040ff;
-
-  /* Legacy neon vars (kept for compatibility) */
-  --neon-cyan: #4090ff;
-  --neon-green: #40d080;
-  --neon-red: #ff4060;
-  --neon-amber: #ffb340;
-
-  /* Backgrounds — same as landing page */
-  --space-900: #030412;
-  --space-800: #060920;
-  --space-700: #08102a;
-  --space-600: #0d1830;
-
-  --background: #030412;
-  --foreground: rgba(232, 237, 245, 0.85);
-  --card: rgba(255, 255, 255, 0.028);
-  --card-foreground: rgba(232, 237, 245, 0.8);
-  --popover: #06091e;
-  --popover-foreground: rgba(232, 237, 245, 0.85);
-  --primary: #4090ff;
-  --primary-foreground: #030412;
-  --secondary: rgba(255, 255, 255, 0.05);
-  --secondary-foreground: rgba(232, 237, 245, 0.6);
-  --muted: rgba(255, 255, 255, 0.04);
-  --muted-foreground: rgba(255, 255, 255, 0.3);
-  --accent: #8040ff;
+  /* Premium neutral palette */
+  --background: #09090b;
+  --foreground: #f4f4f5;
+  --card: #18181b;
+  --card-foreground: #f4f4f5;
+  --popover: #18181b;
+  --popover-foreground: #f4f4f5;
+  
+  /* Primary & Accent high-trust brand colors */
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #27272a;
+  --secondary-foreground: #a1a1aa;
+  
+  --muted: #27272a;
+  --muted-foreground: #71717a;
+  
+  --accent: #3b82f6;
   --accent-foreground: #ffffff;
-  --destructive: #ff4060;
-  --border: rgba(255, 255, 255, 0.07);
-  --input: rgba(255, 255, 255, 0.06);
-  --ring: #4090ff;
-  --chart-1: #4090ff;
-  --chart-2: #40d080;
-  --chart-3: #ffb340;
-  --chart-4: #ff4060;
-  --chart-5: #8040ff;
-  --sidebar: #030412;
-  --sidebar-foreground: rgba(232, 237, 245, 0.6);
-  --sidebar-primary: #4090ff;
-  --sidebar-primary-foreground: #030412;
-  --sidebar-accent: rgba(255, 255, 255, 0.04);
-  --sidebar-accent-foreground: rgba(232, 237, 245, 0.7);
-  --sidebar-border: rgba(255, 255, 255, 0.05);
-  --sidebar-ring: #4090ff;
+  
+  /* Destructive/Warning/Success states (Colorblind accessible, premium neutrals) */
+  --destructive: #ef4444;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.04);
+  --ring: #3b82f6;
+  
+  /* Charts & Badges */
+  --chart-1: #3b82f6;
+  --chart-2: #10b981;
+  --chart-3: #f59e0b;
+  --chart-4: #ef4444;
+  --chart-5: #6366f1;
+  
+  /* Sidebar style */
+  --sidebar: #09090b;
+  --sidebar-foreground: #a1a1aa;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #27272a;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: #3b82f6;
+
+  /* Legacy neon vars (redefined with high-trust tones to prevent breakage) */
+  --electric-blue: #3b82f6;
+  --deep-violet: #6366f1;
+  --neon-cyan: #3b82f6;
+  --neon-green: #10b981;
+  --neon-red: #ef4444;
+  --neon-amber: #f59e0b;
 }
 
 @layer base {
@@ -111,7 +114,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-color: #030412;
+    background-color: #09090b;
   }
 }
 

@@ -164,43 +164,34 @@ function CandidateDetailBody({
       className="flex h-full flex-col"
     >
       {/* Header — score + identity */}
-      <div className="relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-[rgba(0,240,255,0.06)] via-transparent to-[rgba(0,255,102,0.04)] p-6">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[rgba(0,240,255,0.08)] blur-3xl"
-        />
+      <div className="relative overflow-hidden border-b border-zinc-900 bg-zinc-950 p-6">
         <SheetHeader className="p-0">
           <div className="flex items-start gap-4">
             <div
-              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-base font-bold text-[#00F0FF]"
-              style={{
-                background: 'rgba(0,240,255,0.08)',
-                border: '1px solid rgba(0,240,255,0.3)',
-                boxShadow: '0 0 18px rgba(0,240,255,0.2) inset',
-              }}
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-blue-500 bg-blue-500/10 border border-blue-500/20 shadow-sm"
             >
               {getInitials(candidate.name)}
             </div>
             <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <SheetTitle className="text-xl font-bold tracking-tight text-foreground">
+              <SheetTitle className="text-lg font-bold tracking-tight text-zinc-100">
                 {candidate.name}
               </SheetTitle>
               <SheetDescription asChild>
                 <div className="flex flex-col gap-0.5 text-xs">
                   {candidate.email && (
-                    <span className="flex items-center gap-1.5 text-muted-foreground">
-                      <Mail className="h-3 w-3" /> {candidate.email}
+                    <span className="flex items-center gap-1.5 text-zinc-400">
+                      <Mail className="h-3.5 w-3.5 opacity-60" /> {candidate.email}
                     </span>
                   )}
                   {candidate.latestRole && (
-                    <span className="flex items-center gap-1.5 text-muted-foreground">
-                      <Briefcase className="h-3 w-3" /> {candidate.latestRole}
+                    <span className="flex items-center gap-1.5 text-zinc-450">
+                      <Briefcase className="h-3.5 w-3.5 opacity-60" /> {candidate.latestRole}
                       {candidate.latestCompany ? ` · ${candidate.latestCompany}` : ''}
                     </span>
                   )}
                   {candidate.experienceYears != null && (
-                    <span className="flex items-center gap-1.5 text-muted-foreground">
-                      <Clock className="h-3 w-3" /> {candidate.experienceYears} yr experience
+                    <span className="flex items-center gap-1.5 text-zinc-450">
+                      <Clock className="h-3.5 w-3.5 opacity-60" /> {candidate.experienceYears} yr experience
                     </span>
                   )}
                   {candidate.linkedin && (
@@ -208,9 +199,9 @@ function CandidateDetailBody({
                       href={candidate.linkedin}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-[#00F0FF] hover:underline"
+                      className="flex items-center gap-1.5 text-blue-500 hover:underline font-semibold"
                     >
-                      <Linkedin className="h-3 w-3" /> {candidate.linkedin.replace(/^https?:\/\/(www\.)?/, '')}
+                      <Linkedin className="h-3.5 w-3.5 opacity-80" /> {candidate.linkedin.replace(/^https?:\/\/(www\.)?/, '')}
                     </a>
                   )}
                 </div>
@@ -223,7 +214,7 @@ function CandidateDetailBody({
         <div className="mt-5 flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-between">
           <ScoreBadge score={candidate.matchScore} size="lg" />
           <div className="flex w-full flex-1 flex-col gap-2 sm:w-auto">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
               Update status
             </span>
             <div className="grid grid-cols-3 gap-2">
@@ -236,8 +227,8 @@ function CandidateDetailBody({
                     type="button"
                     onClick={() => onStatusChange(candidate.id, btn.value)}
                     className={cn(
-                      'h-9 gap-1.5 rounded-lg border px-2 text-xs font-semibold transition-all',
-                      isActive ? 'neon-glow-cyan' : 'bg-white/[0.03] text-muted-foreground',
+                      'h-9 gap-1 rounded-lg border text-xs font-bold transition-all cursor-pointer',
+                      isActive ? 'text-zinc-100' : 'bg-zinc-900 border-zinc-850 text-zinc-400 hover:bg-zinc-850 hover:text-zinc-200',
                     )}
                     style={
                       isActive
@@ -245,12 +236,11 @@ function CandidateDetailBody({
                             color: btn.color,
                             background: btn.bg,
                             borderColor: btn.border,
-                            boxShadow: `0 0 16px ${btn.color}40`,
                           }
-                        : { borderColor: 'rgba(255,255,255,0.08)' }
+                        : {}
                     }
                   >
-                    <Icon className="h-3.5 w-3.5" style={{ color: isActive ? btn.color : undefined }} />
+                    <Icon className="h-3.5 w-3.5" />
                     {btn.label}
                   </Button>
                 )
@@ -264,50 +254,46 @@ function CandidateDetailBody({
       <div className="custom-scroll flex-1 overflow-y-auto p-6">
         <div className="flex flex-col gap-6">
           {/* AI Verdict */}
-          <Section title="AI Verdict" icon={<Sparkles className="h-4 w-4 text-[#00F0FF]" />}>
+          <Section title="AI Verdict" icon={<Sparkles className="h-4 w-4 text-blue-500" />}>
             <div
-              className="relative overflow-hidden rounded-xl border border-white/10 bg-black/30 p-4"
-              style={{
-                borderLeft: '3px solid #00F0FF',
-                boxShadow: '0 0 18px rgba(0,240,255,0.08) inset',
-              }}
+              className="relative overflow-hidden rounded-xl border border-zinc-900 bg-zinc-900/10 p-4 border-l-2 border-l-blue-500"
             >
               <div className="mb-2 flex items-center gap-2">
-                <span className="flex h-5 items-center gap-1 rounded-md bg-[rgba(0,240,255,0.1)] px-1.5 text-[10px] font-bold uppercase tracking-wider text-[#00F0FF] neon-border-cyan">
+                <span className="flex h-5 items-center gap-1 rounded bg-blue-500/15 px-1.5 text-[9px] font-bold uppercase tracking-wider text-blue-400 border border-blue-500/20">
                   <Sparkles className="h-3 w-3" />
                   AI
                 </span>
-                <span className="text-[11px] text-muted-foreground">Automated assessment</span>
+                <span className="text-xs text-zinc-500">Automated assessment</span>
                 <VerdictPill verdict={candidate.verdict} />
               </div>
-              <p className="text-sm leading-relaxed text-foreground/90">
+              <p className="text-xs leading-relaxed text-zinc-300">
                 {candidate.briefSummary || 'No summary available.'}
               </p>
             </div>
           </Section>
 
           {/* Skills overview */}
-          <Section title="Skills Overview" icon={<ShieldCheck className="h-4 w-4 text-[#00F0FF]" />}>
+          <Section title="Skills Overview" icon={<ShieldCheck className="h-4 w-4 text-blue-500" />}>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {/* Candidate skills (top_skills) */}
-              <div className="rounded-xl border border-[rgba(0,255,102,0.2)] bg-[rgba(0,255,102,0.04)] p-3">
+              {/* Candidate skills */}
+              <div className="rounded-xl border border-emerald-500/10 bg-emerald-500/5 p-3">
                 <div className="mb-2 flex items-center gap-1.5">
-                  <Check className="h-3.5 w-3.5 text-[#00FF66]" />
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#00FF66]">
+                  <Check className="h-3.5 w-3.5 text-emerald-500" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
                     Candidate Skills
                   </span>
-                  <span className="ml-auto text-[10px] text-muted-foreground">
+                  <span className="ml-auto text-[10px] text-zinc-555 font-mono">
                     {topSkills.length}
                   </span>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-1">
                   {topSkills.length === 0 ? (
-                    <span className="text-[11px] text-muted-foreground">No skills listed</span>
+                    <span className="text-[10px] text-zinc-500">No skills listed</span>
                   ) : (
                     topSkills.map((s) => (
                       <span
                         key={s}
-                        className="rounded-md border border-[rgba(0,255,102,0.35)] bg-[rgba(0,255,102,0.08)] px-1.5 py-0.5 text-[11px] font-medium text-[#00FF66]"
+                        className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-400 border border-emerald-500/20"
                       >
                         {s}
                       </span>
@@ -315,26 +301,25 @@ function CandidateDetailBody({
                   )}
                 </div>
               </div>
-              {/* Missing / Gaps — MUST be neon red */}
-              <div className="rounded-xl border border-[rgba(255,45,85,0.25)] bg-[rgba(255,45,85,0.04)] p-3">
+              {/* Missing / Gaps */}
+              <div className="rounded-xl border border-red-500/15 bg-red-500/5 p-3">
                 <div className="mb-2 flex items-center gap-1.5">
-                  <AlertTriangle className="h-3.5 w-3.5 text-[#FF2D55]" />
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#FF2D55]">
+                  <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-red-400">
                     Missing / Gaps
                   </span>
-                  <span className="ml-auto text-[10px] text-muted-foreground">
+                  <span className="ml-auto text-[10px] text-zinc-555 font-mono">
                     {missingSkills.length}
                   </span>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-1">
                   {missingSkills.length === 0 ? (
-                    <span className="text-[11px] text-muted-foreground">No gaps detected</span>
+                    <span className="text-[10px] text-zinc-500">No gaps detected</span>
                   ) : (
                     missingSkills.map((s) => (
                       <span
                         key={s}
-                        className="rounded-md border border-[rgba(255,45,85,0.4)] bg-[rgba(255,45,85,0.1)] px-1.5 py-0.5 text-[11px] font-medium text-[#FF2D55]"
-                        style={{ textShadow: '0 0 8px rgba(255,45,85,0.5)' }}
+                        className="rounded bg-red-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-red-400 border border-red-500/20"
                       >
                         {s}
                       </span>
@@ -346,7 +331,7 @@ function CandidateDetailBody({
           </Section>
 
           {/* Key strengths */}
-          <Section title="Key Strengths" icon={<Check className="h-4 w-4 text-[#00FF66]" />}>
+          <Section title="Key Strengths" icon={<Check className="h-4 w-4 text-emerald-500" />}>
             <BulletList
               items={candidate.keyStrengths}
               tone="green"
@@ -357,7 +342,7 @@ function CandidateDetailBody({
           {/* Missing skills / Gaps detail */}
           <Section
             title="Gaps & Concerns"
-            icon={<AlertTriangle className="h-4 w-4 text-[#FFB340]" />}
+            icon={<AlertTriangle className="h-4 w-4 text-amber-500" />}
           >
             {candidate.missingSkills.length > 0 ? (
               <BulletList
@@ -366,15 +351,15 @@ function CandidateDetailBody({
                 emptyText="No notable gaps"
               />
             ) : (
-              <div className="rounded-xl border border-[rgba(0,255,102,0.2)] bg-[rgba(0,255,102,0.04)] p-4 text-center text-xs text-[#00FF66]">
+              <div className="rounded-xl border border-emerald-500/10 bg-emerald-500/5 p-4 text-center text-xs text-emerald-400">
                 No notable gaps — the candidate meets the JD requirements.
               </div>
             )}
           </Section>
 
           {/* Contact */}
-          <Section title="Contact" icon={<Mail className="h-4 w-4 text-[#00F0FF]" />}>
-            <div className="grid grid-cols-1 gap-2 rounded-xl border border-white/10 bg-black/20 p-4 sm:grid-cols-2">
+          <Section title="Contact" icon={<Mail className="h-4 w-4 text-blue-500" />}>
+            <div className="grid grid-cols-1 gap-3 rounded-xl border border-zinc-900 bg-zinc-900/10 p-4 sm:grid-cols-2">
               <ContactRow icon={<Mail className="h-3.5 w-3.5" />} label="Email" value={candidate.email ?? '—'} />
               <ContactRow
                 icon={<Phone className="h-3.5 w-3.5" />}
@@ -393,9 +378,9 @@ function CandidateDetailBody({
           {/* Parsed metadata */}
           <Section
             title="Parsed Metadata"
-            icon={<FileText className="h-4 w-4 text-[#00F0FF]" />}
+            icon={<FileText className="h-4 w-4 text-blue-500" />}
           >
-            <div className="grid grid-cols-2 gap-2 rounded-xl border border-white/10 bg-black/20 p-4">
+            <div className="grid grid-cols-2 gap-3 rounded-xl border border-zinc-900 bg-zinc-900/10 p-4">
               <MetaRow
                 icon={<Briefcase className="h-3.5 w-3.5" />}
                 label="Latest role"
@@ -456,13 +441,13 @@ function Section({
       transition={{ duration: 0.35 }}
     >
       <div className="mb-2.5 flex items-center gap-2">
-        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-white/[0.04]">
+        <span className="flex h-6 w-6 items-center justify-center rounded bg-zinc-900 border border-zinc-850">
           {icon}
         </span>
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground/90">
+        <h3 className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
           {title}
         </h3>
-        <Separator className="ml-2 flex-1 bg-white/5" />
+        <Separator className="ml-2 flex-1 bg-zinc-900" />
       </div>
       {children}
     </motion.section>
@@ -478,11 +463,13 @@ function BulletList({
   tone: 'green' | 'amber' | 'red'
   emptyText: string
 }) {
-  const color = tone === 'green' ? '#00FF66' : tone === 'red' ? '#FF2D55' : '#FFB340'
+  const color = tone === 'green' ? '#10b981' : tone === 'red' ? '#ef4444' : '#f59e0b'
   const Icon = tone === 'green' ? Check : AlertTriangle
+  const listBorderClass = tone === 'green' ? 'border-emerald-500/10 bg-emerald-500/5' : tone === 'red' ? 'border-red-500/10 bg-red-500/5' : 'border-amber-500/10 bg-amber-500/5'
+
   if (!items || items.length === 0) {
     return (
-      <div className="rounded-xl border border-white/10 bg-black/20 p-4 text-center text-xs text-muted-foreground">
+      <div className="rounded-xl border border-zinc-900 bg-zinc-900/5 p-4 text-center text-xs text-zinc-500">
         {emptyText}
       </div>
     )
@@ -495,13 +482,13 @@ function BulletList({
           initial={{ opacity: 0, x: -6 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.25, delay: Math.min(idx * 0.05, 0.3) }}
-          className="flex items-start gap-2.5 rounded-lg border border-white/5 bg-white/[0.02] p-3"
+          className={cn("flex items-start gap-2.5 rounded-lg border p-3 text-xs leading-relaxed", listBorderClass)}
         >
           <Icon
             className="mt-0.5 h-4 w-4 shrink-0"
-            style={{ color, filter: `drop-shadow(0 0 4px ${color}80)` }}
+            style={{ color }}
           />
-          <span className="text-sm leading-relaxed text-foreground/90">{item}</span>
+          <span className="text-zinc-300">{item}</span>
         </motion.li>
       ))}
     </ul>
@@ -521,16 +508,16 @@ function ContactRow({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+      <span className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-zinc-500">
         {icon}
         {label}
       </span>
       {href ? (
-        <a href={href} target="_blank" rel="noopener noreferrer" className="truncate text-sm text-[#00F0FF] hover:underline" title={value}>
+        <a href={href} target="_blank" rel="noopener noreferrer" className="truncate text-xs text-blue-500 hover:underline font-semibold" title={value}>
           {value}
         </a>
       ) : (
-        <span className="truncate text-sm text-foreground" title={value}>
+        <span className="truncate text-xs text-zinc-300 font-semibold" title={value}>
           {value}
         </span>
       )}
@@ -551,11 +538,11 @@ function MetaRow({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+      <span className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-zinc-500 font-mono">
         {icon}
         {label}
       </span>
-      <span className={cn('text-sm text-foreground', truncate && 'truncate')} title={value}>
+      <span className={cn('text-xs text-zinc-300 font-semibold', truncate && 'truncate')} title={value}>
         {value}
       </span>
     </div>

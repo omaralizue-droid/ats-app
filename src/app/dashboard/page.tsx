@@ -11,9 +11,9 @@ import {
   StatCards,
 } from '@/components/ats'
 import type { SidebarStats } from '@/components/ats'
-import { Button } from '@/components/ui/button'
 import { toast } from '@/hooks/use-toast'
 import type { Candidate, CandidateStatus } from '@/lib/types'
+import { cn } from '@/lib/utils'
 import {
   RefreshCw,
   Sparkles,
@@ -27,6 +27,10 @@ import {
   Clock,
   XCircle,
   ArrowUpRight,
+  ShieldCheck,
+  Binary,
+  Layers,
+  Settings,
 } from 'lucide-react'
 
 /* ── Sample data ─────────────────────────────────────────────────────────── */
@@ -88,6 +92,9 @@ export default function Home() {
   const [detailOpen, setDetailOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [analyzing, setAnalyzing] = useState(false)
+  
+  // Custom stepper phase tracking
+  const [analysisPhase, setAnalysisPhase] = useState(1)
 
   const fetchCandidates = useCallback(async () => {
     setLoading(true)
@@ -103,7 +110,23 @@ export default function Home() {
     }
   }, [])
 
-  useEffect(() => { fetchCandidates() }, [fetchCandidates])
+  useEffect(() => {
+    fetchCandidates()
+  }, [fetchCandidates])
+
+  // Stepper loop simulating steps for confidence building during processing
+  useEffect(() => {
+    if (!analyzing) {
+      setAnalysisPhase(1)
+      return
+    }
+    const t1 = setTimeout(() => setAnalysisPhase(2), 2200)
+    const t2 = setTimeout(() => setAnalysisPhase(3), 5500)
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+    }
+  }, [analyzing])
 
   const handleFileUploaded = useCallback(async (data: { fileName: string; file: File }) => {
     if (jdText.trim().length < 60) {
@@ -111,6 +134,7 @@ export default function Home() {
       return
     }
     setAnalyzing(true)
+    setAnalysisPhase(1)
     try {
       const formData = new FormData()
       formData.append('file', data.file)
@@ -188,56 +212,51 @@ export default function Home() {
   }
 
   const viewSubtitle: Record<string, string> = {
-    dashboard: 'AI-powered resume screening at a glance',
-    upload: 'Drop a resume and let the AI evaluate it against the JD',
-    candidates: 'All candidates ranked by AI match score',
-    analytics: 'Pipeline distribution and score insights',
+    dashboard: 'Candidate matching overview at a glance',
+    upload: 'Stage candidate resumes against the target JD requirements',
+    candidates: 'All candidate scores parsed from current workspace',
+    analytics: 'Pipeline status distributions and score metrics',
   }
 
   return (
-    <div className="flex min-h-screen flex-col" style={{ background: '#030412' }}>
+    <div className="flex min-h-screen flex-col bg-[#09090b] text-[#f4f4f5]">
       <div className="flex flex-1">
         <Sidebar activeView={activeView} onNavigate={setActiveView} stats={stats} />
 
-        {/* Main content */}
+        {/* Main content grid */}
         <main className="custom-scroll flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-7xl px-5 py-7 sm:px-7 lg:px-10">
+          <div className="mx-auto w-full max-w-7xl px-6 py-8 sm:px-8">
 
             {/* ── Page header ── */}
-            <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between border-b border-zinc-900 pb-5">
               <div>
                 <div className="mb-1 flex items-center gap-2.5">
-                  <h1 className="text-2xl font-black tracking-[-0.03em] text-white/80 sm:text-3xl">
+                  <h1 className="text-xl font-bold tracking-tight text-zinc-100 sm:text-2xl">
                     {viewTitle[activeView]}
                   </h1>
                   <span
-                    className="rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em]"
-                    style={{
-                      borderColor: 'rgba(64,144,255,0.25)',
-                      background: 'rgba(64,144,255,0.06)',
-                      color: '#4090ff',
-                    }}
+                    className="rounded bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-500 font-mono"
                   >
-                    AI
+                    AI Engine
                   </span>
                 </div>
-                <p className="text-sm text-white/30">{viewSubtitle[activeView]}</p>
+                <p className="text-xs text-zinc-500">{viewSubtitle[activeView]}</p>
               </div>
 
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleLoadSampleJD}
-                  className="flex items-center gap-1.5 rounded-full border border-white/8 bg-white/[0.03] px-4 py-2 text-xs font-medium text-white/40 transition-all hover:border-white/15 hover:bg-white/[0.06] hover:text-white/70"
+                  className="flex items-center gap-1.5 rounded-lg border border-zinc-850 bg-zinc-900/50 px-3.5 py-1.5 text-xs font-semibold text-zinc-300 transition-all hover:bg-zinc-900 hover:text-zinc-100"
                 >
-                  <Wand2 className="h-3 w-3" />
-                  Sample JD
+                  <Wand2 className="h-3.5 w-3.5 opacity-80" />
+                  Load Sample JD
                 </button>
                 <button
                   onClick={fetchCandidates}
                   disabled={loading}
-                  className="flex items-center gap-1.5 rounded-full border border-white/8 bg-white/[0.03] px-4 py-2 text-xs font-medium text-white/40 transition-all hover:border-white/15 hover:bg-white/[0.06] hover:text-white/70 disabled:opacity-40"
+                  className="flex items-center gap-1.5 rounded-lg border border-zinc-850 bg-zinc-900/50 px-3.5 py-1.5 text-xs font-semibold text-zinc-300 transition-all hover:bg-zinc-900 hover:text-zinc-100 disabled:opacity-40"
                 >
-                  <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin-slow' : ''}`} />
+                  <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''} opacity-80`} />
                   Refresh
                 </button>
               </div>
@@ -247,10 +266,10 @@ export default function Home() {
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeView}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.22, ease: 'easeOut' }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
               >
                 {activeView === 'dashboard' && (
                   <DashboardView
@@ -285,24 +304,24 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-white/[0.04] bg-[#030412]/90 backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-3.5 sm:px-7 lg:px-10">
+      <footer className="border-t border-zinc-900 bg-zinc-950/40">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 sm:px-8">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-3 w-3 text-[#4090ff]" />
-            <span className="text-xs font-semibold gradient-text">NeonATS</span>
-            <span className="text-xs text-white/20">· AI resume screening</span>
+            <Sparkles className="h-3.5 w-3.5 text-blue-500" />
+            <span className="text-xs font-bold text-zinc-300">NeonATS</span>
+            <span className="text-[11px] text-zinc-500">· Precise B2B Candidate Screening</span>
           </div>
-          <div className="flex items-center gap-4 text-xs text-white/20">
-            <span className="hidden sm:inline">Next.js · Three.js · Neon</span>
-            <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#40d080]" style={{ boxShadow: '0 0 6px #40d080' }} />
+          <div className="flex items-center gap-4 text-xs text-zinc-650">
+            <span className="hidden sm:inline">React · Next.js · Tailwind</span>
+            <span className="flex items-center gap-1.5 font-semibold text-emerald-500">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
               Operational
             </span>
           </div>
         </div>
       </footer>
 
-      {/* Candidate detail */}
+      {/* Candidate detail drawer */}
       <CandidateDetail
         candidate={selectedCandidate}
         open={detailOpen}
@@ -310,60 +329,101 @@ export default function Home() {
         onStatusChange={handleStatusChange}
       />
 
-      {/* AI analyzing overlay */}
+      {/* Stepper Processing Overlay */}
       <AnimatePresence>
         {analyzing && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center"
-            style={{ background: 'rgba(3,4,18,0.88)', backdropFilter: 'blur(12px)' }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/80 backdrop-blur-sm"
           >
             <motion.div
-              initial={{ scale: 0.92, opacity: 0 }}
+              initial={{ scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.92, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 280, damping: 24 }}
-              className="flex flex-col items-center gap-6 rounded-2xl border border-white/[0.07] px-10 py-10"
-              style={{
-                background: 'rgba(255,255,255,0.025)',
-                backdropFilter: 'blur(24px)',
-                boxShadow: '0 0 60px rgba(64,144,255,0.08), 0 40px 80px rgba(0,0,0,0.6)',
-              }}
+              exit={{ scale: 0.96, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              className="flex flex-col items-center gap-6 rounded-xl border border-zinc-900 bg-zinc-950 p-8 max-w-md w-full shadow-2xl"
             >
-              {/* Orbital spinner */}
-              <div className="relative flex h-20 w-20 items-center justify-center">
-                <motion.div
-                  className="absolute inset-0 rounded-full border border-white/[0.07]"
-                  style={{ borderTopColor: 'rgba(64,144,255,0.7)' }}
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1.4, repeat: Infinity, ease: 'linear' }}
-                />
-                <motion.div
-                  className="absolute inset-3 rounded-full border border-white/[0.04]"
-                  style={{ borderBottomColor: 'rgba(128,64,255,0.5)' }}
-                  animate={{ rotate: -360 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                />
-                <Sparkles className="h-6 w-6 text-[#4090ff]" />
+              {/* Stepper Step Visual */}
+              <div className="flex items-center gap-3 w-full justify-center">
+                <div className={cn(
+                  "flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-bold font-mono transition-all",
+                  analysisPhase === 1 ? "bg-blue-500/10 border-blue-500 text-blue-500" : "bg-zinc-900 border-zinc-800 text-zinc-550"
+                )}>
+                  {analysisPhase > 1 ? "✓" : "1"}
+                </div>
+                <div className="h-px bg-zinc-900 flex-1"></div>
+                <div className={cn(
+                  "flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-bold font-mono transition-all",
+                  analysisPhase === 2 ? "bg-blue-500/10 border-blue-500 text-blue-500" :
+                  analysisPhase > 2 ? "bg-zinc-900 border-zinc-800 text-zinc-550" : "bg-zinc-950 border-zinc-900 text-zinc-700"
+                )}>
+                  {analysisPhase > 2 ? "✓" : "2"}
+                </div>
+                <div className="h-px bg-zinc-900 flex-1"></div>
+                <div className={cn(
+                  "flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-bold font-mono transition-all",
+                  analysisPhase === 3 ? "bg-blue-500/10 border-blue-500 text-blue-500" : "bg-zinc-950 border-zinc-900 text-zinc-700"
+                )}>
+                  3
+                </div>
               </div>
 
-              <div className="text-center">
-                <p className="text-base font-semibold text-white/80">Analyzing resume</p>
-                <p className="mt-1.5 text-sm text-white/30">Parsing · matching skills · scoring fit</p>
+              {/* Core messages */}
+              <div className="text-center w-full">
+                <AnimatePresence mode="wait">
+                  {analysisPhase === 1 && (
+                    <motion.div
+                      key="step1"
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      className="flex flex-col items-center gap-1"
+                    >
+                      <Binary className="h-5 w-5 text-blue-500 animate-pulse" />
+                      <p className="text-sm font-bold text-zinc-200">Extracting resume layers</p>
+                      <p className="text-xs text-zinc-500">Reading structured blocks from file data</p>
+                    </motion.div>
+                  )}
+                  {analysisPhase === 2 && (
+                    <motion.div
+                      key="step2"
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      className="flex flex-col items-center gap-1"
+                    >
+                      <Layers className="h-5 w-5 text-blue-500 animate-pulse" />
+                      <p className="text-sm font-bold text-zinc-200">Evaluating rubric alignment</p>
+                      <p className="text-xs text-zinc-500">Checking skills and direct experience match</p>
+                    </motion.div>
+                  )}
+                  {analysisPhase === 3 && (
+                    <motion.div
+                      key="step3"
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      className="flex flex-col items-center gap-1"
+                    >
+                      <Settings className="h-5 w-5 text-blue-500 animate-spin" />
+                      <p className="text-sm font-bold text-zinc-200">Scoring compatibility fit</p>
+                      <p className="text-xs text-zinc-500">Weighted calculations & drafting AI summary</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
-              {/* Pulse dots */}
-              <div className="flex gap-1.5">
-                {[0, 1, 2].map(i => (
-                  <motion.span
-                    key={i}
-                    className="h-1 w-1 rounded-full bg-[#4090ff]"
-                    animate={{ opacity: [0.2, 1, 0.2] }}
-                    transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.25 }}
-                  />
-                ))}
+              {/* Simulated small progress status */}
+              <div className="w-full bg-zinc-900 h-1 rounded-full overflow-hidden">
+                <motion.div
+                  className="bg-blue-500 h-full rounded-full"
+                  animate={{
+                    width: analysisPhase === 1 ? '33%' : analysisPhase === 2 ? '66%' : '95%'
+                  }}
+                  transition={{ duration: 0.8 }}
+                />
               </div>
             </motion.div>
           </motion.div>
@@ -378,14 +438,13 @@ function SectionHeader({ icon, title, subtitle }: { icon: React.ReactNode; title
   return (
     <div className="flex items-center gap-3">
       <div
-        className="flex h-8 w-8 items-center justify-center rounded-lg text-[#4090ff]"
-        style={{ background: 'rgba(64,144,255,0.06)', border: '1px solid rgba(64,144,255,0.15)' }}
+        className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-500"
       >
         {icon}
       </div>
       <div>
-        <h2 className="text-sm font-semibold tracking-tight text-white/70">{title}</h2>
-        <p className="text-xs text-white/30">{subtitle}</p>
+        <h2 className="text-sm font-bold tracking-tight text-zinc-200">{title}</h2>
+        <p className="text-xs text-zinc-500">{subtitle}</p>
       </div>
     </div>
   )
@@ -393,7 +452,7 @@ function SectionHeader({ icon, title, subtitle }: { icon: React.ReactNode; title
 
 /* ── Thin divider ─────────────────────────────────────────────────────────── */
 function Divider() {
-  return <div className="my-8 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+  return <div className="my-6 h-px bg-zinc-900" />
 }
 
 /* ── Dashboard view ──────────────────────────────────────────────────────── */
@@ -411,7 +470,7 @@ function DashboardView({
   onNavigate: (v: string) => void
 }) {
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       <StatCards candidates={candidates} />
       <Divider />
 
@@ -420,14 +479,14 @@ function DashboardView({
           <SectionHeader
             icon={<Zap className="h-3.5 w-3.5" />}
             title="Upload Resume"
-            subtitle="Drop a file to run AI matching"
+            subtitle="Drop candidate file to evaluate alignment"
           />
           <div className="mt-4">
             <UploadZone onFileUploaded={onFileUploaded} disabled={jdText.trim().length < 60} />
             {jdText.trim().length < 60 && (
-              <p className="mt-2.5 flex items-center gap-1.5 text-xs text-[#ffb340]/70">
-                <FileSearch className="h-3 w-3" />
-                Paste a job description below to enable uploads
+              <p className="mt-2.5 flex items-center gap-1.5 text-xs text-amber-500/90 font-medium">
+                <FileSearch className="h-3.5 w-3.5" />
+                Paste the Job Description to enable resume staging
               </p>
             )}
           </div>
@@ -436,7 +495,7 @@ function DashboardView({
           <SectionHeader
             icon={<FileSearch className="h-3.5 w-3.5" />}
             title="Job Description"
-            subtitle="The target role to match against"
+            subtitle="Paste target role requirements here"
           />
           <div className="mt-4">
             <JobDescriptionInput value={jdText} onChange={onJdChange} />
@@ -450,16 +509,16 @@ function DashboardView({
         <div className="flex items-center justify-between">
           <SectionHeader
             icon={<Users className="h-3.5 w-3.5" />}
-            title="Top Candidates"
-            subtitle="Ranked by AI match score"
+            title="Top Matches"
+            subtitle="Candidates ranked by technical compatibility"
           />
           {candidates.length > 0 && (
             <button
               onClick={() => onNavigate('candidates')}
-              className="flex items-center gap-1 text-xs text-white/30 transition-colors hover:text-white/60"
+              className="flex items-center gap-1 text-xs font-semibold text-zinc-500 hover:text-zinc-300 transition-colors"
             >
-              View all
-              <ArrowUpRight className="h-3 w-3" />
+              View all candidates
+              <ArrowUpRight className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
@@ -493,8 +552,8 @@ function UploadView({ jdText, onJdChange, onFileUploaded }: {
         <div className="mt-4">
           <UploadZone onFileUploaded={onFileUploaded} disabled={jdText.trim().length < 60} />
           {jdText.trim().length < 60 && (
-            <p className="mt-2.5 flex items-center gap-1.5 text-xs text-[#ffb340]/70">
-              <FileSearch className="h-3 w-3" />
+            <p className="mt-2.5 flex items-center gap-1.5 text-xs text-amber-500/90 font-medium">
+              <FileSearch className="h-3.5 w-3.5" />
               A job description is required before uploading
             </p>
           )}
@@ -522,14 +581,14 @@ function CandidatesView({ candidates, loading, onSelectCandidate, onStatusChange
   onStatusChange: (id: string, status: CandidateStatus) => void
 }) {
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       <StatCards candidates={candidates} />
       <Divider />
       <div>
         <SectionHeader
           icon={<Users className="h-3.5 w-3.5" />}
           title="All Candidates"
-          subtitle={`${candidates.length} total · sorted by match score`}
+          subtitle={`${candidates.length} total candidates in workspace`}
         />
         <div className="mt-4">
           <CandidateTable
@@ -548,10 +607,10 @@ function CandidatesView({ candidates, loading, onSelectCandidate, onStatusChange
 function AnalyticsView({ candidates, stats }: { candidates: Candidate[]; stats: SidebarStats }) {
   const scoreBands = useMemo(() => {
     const bands = [
-      { label: '90–100', min: 90, max: 100, color: '#40d080' },
-      { label: '75–89',  min: 75, max: 89,  color: '#4090ff' },
-      { label: '50–74',  min: 50, max: 74,  color: '#ffb340' },
-      { label: '0–49',   min: 0,  max: 49,  color: '#ff4060' },
+      { label: '90–100', min: 90, max: 100, color: '#10b981' },
+      { label: '75–89',  min: 75, max: 89,  color: '#3b82f6' },
+      { label: '50–74',  min: 50, max: 74,  color: '#f59e0b' },
+      { label: '0–49',   min: 0,  max: 49,  color: '#ef4444' },
     ]
     return bands.map(b => ({
       ...b,
@@ -562,33 +621,28 @@ function AnalyticsView({ candidates, stats }: { candidates: Candidate[]; stats: 
   const maxCount = Math.max(1, ...scoreBands.map(b => b.count))
 
   const statusBreakdown = [
-    { label: 'Shortlisted', value: stats.shortlisted, color: '#40d080', icon: ThumbsUp },
-    { label: 'Review',      value: stats.review,      color: '#ffb340', icon: Clock    },
-    { label: 'Rejected',    value: stats.rejected,    color: '#ff4060', icon: XCircle  },
+    { label: 'Shortlisted', value: stats.shortlisted, color: '#10b981', icon: ThumbsUp },
+    { label: 'Review',      value: stats.review,      color: '#f59e0b', icon: Clock    },
+    { label: 'Rejected',    value: stats.rejected,    color: '#ef4444', icon: XCircle  },
   ]
 
   const emptyState = (text: string) => (
-    <p className="py-10 text-center text-sm text-white/20">{text}</p>
+    <p className="py-10 text-center text-xs text-zinc-550">{text}</p>
   )
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6 font-mono">
       <StatCards candidates={candidates} />
       <Divider />
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         {/* Score distribution */}
         <div
-          className="rounded-2xl p-6"
-          style={{
-            background: 'rgba(255,255,255,0.025)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            backdropFilter: 'blur(16px)',
-          }}
+          className="rounded-xl p-6 bg-zinc-950 border border-zinc-900"
         >
           <div className="mb-5 flex items-center gap-2.5">
-            <TrendingUp className="h-4 w-4 text-[#4090ff]" />
-            <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-white/40">
+            <TrendingUp className="h-4 w-4 text-blue-500" />
+            <h3 className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
               Score Distribution
             </h3>
           </div>
@@ -596,19 +650,19 @@ function AnalyticsView({ candidates, stats }: { candidates: Candidate[]; stats: 
             <div className="flex flex-col gap-3">
               {scoreBands.map(band => (
                 <div key={band.label} className="flex items-center gap-3">
-                  <span className="w-14 text-xs font-medium text-white/25">{band.label}</span>
-                  <div className="relative h-8 flex-1 overflow-hidden rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                  <span className="w-14 text-xs font-semibold text-zinc-500">{band.label}</span>
+                  <div className="relative h-6 flex-1 overflow-hidden rounded bg-zinc-900/60 border border-zinc-900">
                     <motion.div
-                      className="absolute inset-y-0 left-0 rounded-lg"
+                      className="absolute inset-y-0 left-0 rounded-l"
                       style={{
-                        backgroundColor: `${band.color}18`,
-                        borderRight: `2px solid ${band.color}60`,
+                        backgroundColor: `${band.color}20`,
+                        borderRight: `2.5px solid ${band.color}`,
                       }}
                       initial={{ width: 0 }}
                       animate={{ width: `${(band.count / maxCount) * 100}%` }}
                       transition={{ duration: 0.8, ease: [0.22, 0.6, 0.36, 1] }}
                     />
-                    <span className="absolute inset-y-0 left-3 flex items-center text-sm font-bold" style={{ color: band.color }}>
+                    <span className="absolute inset-y-0 left-2.5 flex items-center text-xs font-bold" style={{ color: band.color }}>
                       {band.count}
                     </span>
                   </div>
@@ -620,16 +674,11 @@ function AnalyticsView({ candidates, stats }: { candidates: Candidate[]; stats: 
 
         {/* Pipeline status */}
         <div
-          className="rounded-2xl p-6"
-          style={{
-            background: 'rgba(255,255,255,0.025)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            backdropFilter: 'blur(16px)',
-          }}
+          className="rounded-xl p-6 bg-zinc-950 border border-zinc-900"
         >
           <div className="mb-5 flex items-center gap-2.5">
-            <Gauge className="h-4 w-4 text-[#40d080]" />
-            <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-white/40">
+            <Gauge className="h-4 w-4 text-emerald-555" />
+            <h3 className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
               Pipeline Status
             </h3>
           </div>
@@ -641,19 +690,19 @@ function AnalyticsView({ candidates, stats }: { candidates: Candidate[]; stats: 
                 return (
                   <div key={s.label}>
                     <div className="mb-2 flex items-center justify-between">
-                      <span className="flex items-center gap-2 text-sm text-white/60">
+                      <span className="flex items-center gap-2 text-xs font-semibold text-zinc-400">
                         <Icon className="h-3.5 w-3.5" style={{ color: s.color }} />
                         {s.label}
                       </span>
-                      <span className="text-sm font-semibold text-white/40">
+                      <span className="text-xs font-bold text-zinc-400">
                         {s.value}
-                        <span className="ml-1 text-xs text-white/20">({pct}%)</span>
+                        <span className="ml-1 text-[10px] text-zinc-600">({pct}%)</span>
                       </span>
                     </div>
-                    <div className="h-1.5 w-full overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                    <div className="h-1 w-full overflow-hidden rounded bg-zinc-900">
                       <motion.div
-                        className="h-full rounded-full"
-                        style={{ backgroundColor: s.color, boxShadow: `0 0 8px ${s.color}60` }}
+                        className="h-full rounded"
+                        style={{ backgroundColor: s.color }}
                         initial={{ width: 0 }}
                         animate={{ width: `${pct}%` }}
                         transition={{ duration: 0.8, ease: [0.22, 0.6, 0.36, 1] }}

@@ -47,23 +47,23 @@ const STATUS_META: Record<
 > = {
   REVIEW: {
     label: 'Review',
-    color: '#FFB340',
-    bg: 'rgba(255,179,64,0.12)',
-    border: 'rgba(255,179,64,0.4)',
+    color: '#f59e0b',
+    bg: 'rgba(245,158,11,0.06)',
+    border: 'rgba(245,158,11,0.18)',
     icon: Clock,
   },
   SHORTLIST: {
     label: 'Shortlist',
-    color: '#00FF66',
-    bg: 'rgba(0,255,102,0.12)',
-    border: 'rgba(0,255,102,0.4)',
+    color: '#10b981',
+    bg: 'rgba(16,185,129,0.06)',
+    border: 'rgba(16,185,129,0.18)',
     icon: ThumbsUp,
   },
   REJECT: {
     label: 'Reject',
-    color: '#FF2D55',
-    bg: 'rgba(255,45,85,0.12)',
-    border: 'rgba(255,45,85,0.4)',
+    color: '#ef4444',
+    bg: 'rgba(239,68,68,0.06)',
+    border: 'rgba(239,68,68,0.18)',
     icon: XCircle,
   },
 }
@@ -84,7 +84,6 @@ export function CandidateTable({
   onStatusChange,
   className,
 }: CandidateTableProps) {
-  // Sort by matchScore desc (defensive — backend already sorts, but keep it stable here too)
   const sorted = useMemo(
     () => [...candidates].sort((a, b) => b.matchScore - a.matchScore),
     [candidates],
@@ -99,26 +98,26 @@ export function CandidateTable({
   }
 
   return (
-    <div className={cn('glass w-full overflow-hidden rounded-2xl', className)}>
+    <div className={cn('bg-zinc-950 border border-zinc-900 w-full overflow-hidden rounded-xl', className)}>
       {/* Desktop / tablet: full table */}
       <div className="hidden md:block">
         <div className="custom-scroll overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-white/5 hover:bg-transparent">
-                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <TableRow className="border-zinc-900 hover:bg-transparent bg-zinc-900/10">
+                <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                   Candidate
                 </TableHead>
-                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                   Match
                 </TableHead>
-                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                   Skills
                 </TableHead>
-                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                   Status
                 </TableHead>
-                <TableHead className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <TableHead className="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                   Actions
                 </TableHead>
               </TableRow>
@@ -174,7 +173,6 @@ function CandidateRow({
   onStatusChange: (id: string, status: CandidateStatus) => void
 }) {
   const meta = STATUS_META[candidate.status]
-  const StatusIcon = meta.icon
   const visibleSkills = candidate.topSkills.slice(0, 4)
   const extraCount = candidate.topSkills.length - visibleSkills.length
 
@@ -186,45 +184,35 @@ function CandidateRow({
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.4) }}
       className={cn(
-        'group relative border-b border-white/5 transition-colors',
-        'hover:bg-white/[0.04]',
+        'group relative border-b border-zinc-900 transition-colors',
+        'hover:bg-zinc-900/30',
       )}
     >
-      {/* Left neon accent on hover */}
-      <td className="relative p-0">
+      <TableCell className="relative px-4 py-3">
         <span
           aria-hidden
-          className="absolute inset-y-0 left-0 w-[3px] origin-top scale-y-0 bg-[#00F0FF] transition-transform duration-200 group-hover:scale-y-100"
-          style={{ boxShadow: '0 0 12px rgba(0,240,255,0.7)' }}
+          className="absolute inset-y-0 left-0 w-[2px] origin-top scale-y-0 bg-blue-500 transition-transform duration-200 group-hover:scale-y-100"
         />
-      </td>
-
-      <TableCell className="px-4 py-3.5">
         <button
           onClick={() => onSelectCandidate(candidate)}
           className="flex items-center gap-3 text-left"
         >
           <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold text-[#00F0FF]"
-            style={{
-              background: 'rgba(0,240,255,0.08)',
-              border: '1px solid rgba(0,240,255,0.3)',
-              boxShadow: '0 0 12px rgba(0,240,255,0.15) inset',
-            }}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-bold text-blue-500 bg-blue-500/10 border border-blue-500/20"
           >
             {getInitials(candidate.name)}
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-foreground group-hover:text-[#00F0FF] transition-colors">
+            <span className="text-sm font-semibold text-zinc-200 group-hover:text-blue-500 transition-colors">
               {candidate.name}
             </span>
-            <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-              <Mail className="h-3 w-3" />
+            <span className="flex items-center gap-1 text-[11px] text-zinc-500">
+              <Mail className="h-3.5 w-3.5 opacity-60" />
               <span className="max-w-[200px] truncate">{candidate.email}</span>
             </span>
             {candidate.latestRole && (
-              <span className="flex items-center gap-1 text-[11px] text-muted-foreground/80">
-                <Briefcase className="h-3 w-3" />
+              <span className="flex items-center gap-1 text-[11px] text-zinc-500">
+                <Briefcase className="h-3.5 w-3.5 opacity-60" />
                 <span className="max-w-[200px] truncate">
                   {candidate.latestRole}
                   {candidate.latestCompany ? ` · ${candidate.latestCompany}` : ''}
@@ -235,44 +223,44 @@ function CandidateRow({
         </button>
       </TableCell>
 
-      <TableCell className="px-4 py-3.5">
+      <TableCell className="px-4 py-3">
         <ScoreBadge score={candidate.matchScore} size="sm" animateCount={false} />
       </TableCell>
 
-      <TableCell className="px-4 py-3.5">
-        <div className="flex flex-wrap items-center gap-1.5 max-w-[280px]">
+      <TableCell className="px-4 py-3">
+        <div className="flex flex-wrap items-center gap-1 max-w-[280px]">
           {visibleSkills.map((s) => (
             <span
               key={s}
-              className="rounded-md border border-[rgba(0,240,255,0.25)] bg-[rgba(0,240,255,0.06)] px-1.5 py-0.5 text-[10px] font-medium text-[#00F0FF]"
+              className="rounded bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-300"
             >
               {s}
             </span>
           ))}
           {extraCount > 0 && (
-            <span className="rounded-md border border-white/10 bg-white/[0.03] px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-              +{extraCount} more
+            <span className="rounded bg-zinc-900/30 border border-zinc-900 px-1 py-0.5 text-[9px] font-semibold text-zinc-500">
+              +{extraCount}
             </span>
           )}
           {candidate.topSkills.length === 0 && (
-            <span className="text-[11px] text-muted-foreground">No skills</span>
+            <span className="text-[11px] text-zinc-650">—</span>
           )}
         </div>
       </TableCell>
 
-      <TableCell className="px-4 py-3.5">
+      <TableCell className="px-4 py-3">
         <StatusDropdown
           status={candidate.status}
           onChange={(s) => onStatusChange(candidate.id, s)}
         />
       </TableCell>
 
-      <TableCell className="px-4 py-3.5 text-right">
+      <TableCell className="px-4 py-3 text-right">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => onSelectCandidate(candidate)}
-          className="gap-1.5 border border-white/10 bg-white/[0.03] text-foreground hover:border-[rgba(0,240,255,0.4)] hover:bg-[rgba(0,240,255,0.08)] hover:text-[#00F0FF]"
+          className="gap-1 border border-zinc-850 bg-zinc-900/50 text-zinc-350 hover:border-zinc-700 hover:bg-zinc-850 hover:text-zinc-100"
         >
           <Eye className="h-3.5 w-3.5" />
           View
@@ -307,7 +295,7 @@ function CandidateCardMobile({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.3) }}
-      className="relative overflow-hidden rounded-xl border border-white/5 bg-white/[0.02] p-3.5"
+      className="relative overflow-hidden rounded-xl border border-zinc-900 bg-zinc-950 p-3.5"
     >
       <div className="flex items-start justify-between gap-3">
         <button
@@ -315,21 +303,17 @@ function CandidateCardMobile({
           className="flex flex-1 items-center gap-3 text-left"
         >
           <div
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xs font-bold text-[#00F0FF]"
-            style={{
-              background: 'rgba(0,240,255,0.08)',
-              border: '1px solid rgba(0,240,255,0.3)',
-            }}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-xs font-bold text-blue-500 bg-blue-500/10 border border-blue-500/20"
           >
             {getInitials(candidate.name)}
           </div>
           <div className="flex min-w-0 flex-col">
-            <span className="truncate text-sm font-semibold text-foreground">
+            <span className="truncate text-sm font-semibold text-zinc-200">
               {candidate.name}
             </span>
-            <span className="truncate text-[11px] text-muted-foreground">{candidate.email}</span>
+            <span className="truncate text-[11px] text-zinc-500">{candidate.email}</span>
             {candidate.latestRole && (
-              <span className="truncate text-[11px] text-muted-foreground/80">
+              <span className="truncate text-[11px] text-zinc-550">
                 {candidate.latestRole}
                 {candidate.latestCompany ? ` · ${candidate.latestCompany}` : ''}
               </span>
@@ -339,18 +323,18 @@ function CandidateCardMobile({
         <ScoreBadge score={candidate.matchScore} size="sm" animateCount={false} />
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+      <div className="mt-3 flex flex-wrap items-center gap-1">
         {visibleSkills.map((s) => (
           <span
             key={s}
-            className="rounded-md border border-[rgba(0,240,255,0.25)] bg-[rgba(0,240,255,0.06)] px-1.5 py-0.5 text-[10px] font-medium text-[#00F0FF]"
+            className="rounded bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-300"
           >
             {s}
           </span>
         ))}
         {extraCount > 0 && (
-          <span className="rounded-md border border-white/10 bg-white/[0.03] px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-            +{extraCount} more
+          <span className="rounded bg-zinc-900/30 border border-zinc-900 px-1 py-0.5 text-[9px] font-semibold text-zinc-500">
+            +{extraCount}
           </span>
         )}
       </div>
@@ -364,7 +348,7 @@ function CandidateCardMobile({
           variant="ghost"
           size="sm"
           onClick={() => onSelectCandidate(candidate)}
-          className="gap-1.5 border border-white/10 bg-white/[0.03] text-foreground hover:border-[rgba(0,240,255,0.4)] hover:bg-[rgba(0,240,255,0.08)] hover:text-[#00F0FF]"
+          className="gap-1 border border-zinc-850 bg-zinc-900/50 text-zinc-350 hover:border-zinc-700 hover:bg-zinc-850 hover:text-zinc-100"
         >
           <Eye className="h-3.5 w-3.5" />
           View
@@ -393,7 +377,7 @@ function StatusDropdown({
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="group flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-all hover:brightness-125"
+          className="group flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"
           style={{
             color: meta.color,
             background: meta.bg,
@@ -407,12 +391,12 @@ function StatusDropdown({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
-        className="min-w-[160px] border-white/10 bg-[#0F1422]/95 backdrop-blur-md"
+        className="min-w-[150px] border-zinc-900 bg-zinc-950/95 backdrop-blur-md"
       >
-        <DropdownMenuLabel className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+        <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-wider text-zinc-500">
           Change status
         </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-white/5" />
+        <DropdownMenuSeparator className="bg-zinc-900" />
         {STATUS_OPTIONS.map((opt) => {
           const m = STATUS_META[opt]
           const Icon = m.icon
@@ -422,18 +406,17 @@ function StatusDropdown({
               key={opt}
               onClick={() => onChange(opt)}
               className={cn(
-                'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm',
-                isActive && 'bg-white/[0.04]',
+                'flex items-center gap-2 rounded-md px-2 py-1.5 text-xs font-semibold cursor-pointer',
+                isActive && 'bg-zinc-900',
               )}
             >
               <Icon className="h-3.5 w-3.5" style={{ color: m.color }} />
-              <span style={{ color: isActive ? m.color : undefined }} className="font-medium">
+              <span style={{ color: isActive ? m.color : undefined }} className="font-semibold text-zinc-350">
                 {m.label}
               </span>
               {isActive && (
                 <span
-                  className="ml-auto h-1.5 w-1.5 rounded-full"
-                  style={{ background: m.color, boxShadow: `0 0 8px ${m.color}` }}
+                  className="ml-auto h-1 w-1 rounded-full bg-blue-500"
                 />
               )}
             </DropdownMenuItem>
@@ -450,49 +433,48 @@ function StatusDropdown({
 
 function TableSkeleton({ className }: { className?: string }) {
   return (
-    <div className={cn('glass w-full overflow-hidden rounded-2xl', className)}>
+    <div className={cn('bg-zinc-950 border border-zinc-900 w-full overflow-hidden rounded-xl', className)}>
       <div className="hidden md:block">
-        <div className="border-b border-white/5 px-4 py-3">
+        <div className="border-b border-zinc-900 px-4 py-3 bg-zinc-900/10">
           <div className="grid grid-cols-[2fr_1fr_2fr_1fr_1fr] gap-4">
             {[0, 1, 2, 3, 4].map((i) => (
-              <div key={i} className="shimmer-bg h-3.5 w-3/4 rounded" />
+              <div key={i} className="shimmer-bg h-3 w-3/4 rounded" />
             ))}
           </div>
         </div>
         {[0, 1, 2, 3, 4].map((row) => (
-          <div key={row} className="border-b border-white/5 px-4 py-4">
+          <div key={row} className="border-b border-zinc-900 px-4 py-3 bg-zinc-950">
             <div className="grid grid-cols-[2fr_1fr_2fr_1fr_1fr] items-center gap-4">
               <div className="flex items-center gap-3">
-                <div className="shimmer-bg h-10 w-10 rounded-full" />
-                <div className="flex flex-1 flex-col gap-1.5">
+                <div className="shimmer-bg h-9 w-9 rounded-lg" />
+                <div className="flex flex-1 flex-col gap-1">
                   <div className="shimmer-bg h-3 w-2/3 rounded" />
                   <div className="shimmer-bg h-2.5 w-1/2 rounded" />
                 </div>
               </div>
-              <div className="shimmer-bg h-10 w-10 rounded-full" />
-              <div className="flex gap-1.5">
+              <div className="shimmer-bg h-8 w-8 rounded-full" />
+              <div className="flex gap-1">
                 <div className="shimmer-bg h-4 w-12 rounded" />
                 <div className="shimmer-bg h-4 w-14 rounded" />
-                <div className="shimmer-bg h-4 w-10 rounded" />
               </div>
-              <div className="shimmer-bg h-5 w-20 rounded-full" />
-              <div className="shimmer-bg ml-auto h-7 w-16 rounded-md" />
+              <div className="shimmer-bg h-4 w-16 rounded-full" />
+              <div className="shimmer-bg ml-auto h-7 w-14 rounded" />
             </div>
           </div>
         ))}
       </div>
       <div className="flex flex-col gap-3 p-3 md:hidden">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="rounded-xl border border-white/5 bg-white/[0.02] p-3.5">
+          <div key={i} className="rounded-xl border border-zinc-900 bg-zinc-950 p-3.5">
             <div className="flex items-center gap-3">
-              <div className="shimmer-bg h-11 w-11 rounded-full" />
-              <div className="flex flex-1 flex-col gap-1.5">
+              <div className="shimmer-bg h-10 w-10 rounded-lg" />
+              <div className="flex flex-1 flex-col gap-1">
                 <div className="shimmer-bg h-3 w-2/3 rounded" />
                 <div className="shimmer-bg h-2.5 w-1/2 rounded" />
               </div>
-              <div className="shimmer-bg h-10 w-10 rounded-full" />
+              <div className="shimmer-bg h-8 w-8 rounded-full" />
             </div>
-            <div className="mt-3 flex gap-1.5">
+            <div className="mt-3 flex gap-1">
               <div className="shimmer-bg h-4 w-12 rounded" />
               <div className="shimmer-bg h-4 w-14 rounded" />
             </div>
@@ -511,7 +493,7 @@ function EmptyState({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'glass flex flex-col items-center justify-center rounded-2xl px-6 py-16 text-center',
+        'bg-zinc-950 border border-zinc-900 flex flex-col items-center justify-center rounded-xl px-6 py-16 text-center',
         className,
       )}
     >
@@ -519,14 +501,14 @@ function EmptyState({ className }: { className?: string }) {
         initial={{ scale: 0.85, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[rgba(0,240,255,0.08)] neon-border-cyan animate-neon-pulse"
+        className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-500"
       >
-        <Inbox className="h-8 w-8 text-[#00F0FF]" />
+        <Inbox className="h-5 w-5" />
       </motion.div>
-      <h3 className="text-base font-semibold tracking-tight text-foreground">
+      <h3 className="text-sm font-bold tracking-tight text-zinc-200">
         No candidates yet
       </h3>
-      <p className="mt-1 max-w-xs text-sm text-muted-foreground">
+      <p className="mt-1.5 max-w-xs text-xs text-zinc-500 leading-relaxed">
         Upload a resume and a target job description to begin AI-powered screening.
       </p>
     </div>

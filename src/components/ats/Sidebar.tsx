@@ -52,7 +52,7 @@ export function Sidebar({ activeView, onNavigate, stats, className }: SidebarPro
       {/* Desktop sidebar (md+) */}
       <aside
         className={cn(
-          'glass-strong sticky top-0 hidden h-screen w-[240px] shrink-0 flex-col border-r border-white/5 md:flex',
+          'bg-zinc-950 sticky top-0 hidden h-screen w-[240px] shrink-0 flex-col border-r border-zinc-900 md:flex',
           className,
         )}
       >
@@ -64,7 +64,7 @@ export function Sidebar({ activeView, onNavigate, stats, className }: SidebarPro
       </aside>
 
       {/* Mobile top bar */}
-      <div className="glass-strong sticky top-0 z-30 flex items-center justify-between border-b border-white/5 px-4 py-3 md:hidden">
+      <div className="bg-zinc-950 border-b border-zinc-900 sticky top-0 z-30 flex items-center justify-between px-4 py-3 md:hidden">
         <Logo />
         <MobileNav
           activeView={activeView}
@@ -88,13 +88,13 @@ function SidebarContent({
   return (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b border-white/5 px-5">
+      <div className="flex h-16 items-center border-b border-zinc-900 px-5">
         <Logo />
       </div>
 
       {/* Nav */}
       <nav className="custom-scroll flex-1 overflow-y-auto px-3 py-4">
-        <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
           Workspace
         </p>
         <ul className="flex flex-col gap-1">
@@ -108,21 +108,14 @@ function SidebarContent({
                   className={cn(
                     'group relative flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
                     isActive
-                      ? 'bg-white/[0.04] text-white/80'
-                      : 'text-white/30 hover:bg-white/[0.025] hover:text-white/60',
+                      ? 'bg-zinc-900 text-zinc-100 shadow-sm border border-zinc-800'
+                      : 'text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200 border border-transparent',
                   )}
                 >
-                  {isActive && (
-                    <motion.span
-                      layoutId="sidebar-active"
-                      className="absolute inset-y-1.5 left-0 w-[2px] rounded-r-full bg-[#4090ff]"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    />
-                  )}
                   <Icon
                     className={cn(
                       'h-4 w-4 shrink-0 transition-colors',
-                      isActive ? 'text-[#4090ff]' : 'text-white/25 group-hover:text-white/50',
+                      isActive ? 'text-blue-500' : 'text-zinc-450 group-hover:text-zinc-300',
                     )}
                   />
                   {item.label}
@@ -133,15 +126,15 @@ function SidebarContent({
         </ul>
       </nav>
 
-      <div className="border-t border-white/[0.05] p-3">
-        <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/20">
+      <div className="border-t border-zinc-900 p-3">
+        <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 font-mono">
           Pipeline
         </p>
-        <div className="grid grid-cols-2 gap-1.5">
-          <MiniStatCard label="Total"       value={stats.total}       color="#4090ff" icon={<Users    className="h-3 w-3" />} />
-          <MiniStatCard label="Shortlisted" value={stats.shortlisted} color="#40d080" icon={<ThumbsUp className="h-3 w-3" />} />
-          <MiniStatCard label="Avg score"   value={stats.avgScore}    color="#ffb340" icon={<Gauge    className="h-3 w-3" />} suffix="" />
-          <MiniStatCard label="Rejected"    value={stats.rejected}    color="#ff4060" icon={<X        className="h-3 w-3" />} />
+        <div className="grid grid-cols-2 gap-1.5 font-mono">
+          <MiniStatCard label="Total"       value={stats.total}       color="#3b82f6" icon={<Users    className="h-3 w-3" />} />
+          <MiniStatCard label="Shortlisted" value={stats.shortlisted} color="#10b981" icon={<ThumbsUp className="h-3 w-3" />} />
+          <MiniStatCard label="Avg score"   value={stats.avgScore}    color="#f59e0b" icon={<Gauge    className="h-3 w-3" />} suffix="%" />
+          <MiniStatCard label="Rejected"    value={stats.rejected}    color="#ef4444" icon={<X        className="h-3 w-3" />} />
         </div>
       </div>
     </div>
@@ -152,16 +145,15 @@ function Logo() {
   return (
     <div className="flex items-center gap-2.5">
       <div
-        className="relative flex h-8 w-8 items-center justify-center rounded-lg"
-        style={{ background: 'rgba(64,144,255,0.08)', border: '1px solid rgba(64,144,255,0.2)' }}
+        className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 border border-blue-500/20"
       >
-        <Radar className="h-4 w-4 text-[#4090ff]" />
+        <Radar className="h-4 w-4 text-blue-500" />
       </div>
       <div className="flex flex-col leading-none">
-        <span className="gradient-text text-base font-bold tracking-tight">
+        <span className="text-sm font-bold tracking-tight text-zinc-100">
           NeonATS
         </span>
-        <span className="text-[9px] font-medium uppercase tracking-[0.2em] text-white/20">
+        <span className="text-[9px] font-medium uppercase tracking-[0.2em] text-zinc-500">
           AI Resume ATS
         </span>
       </div>
@@ -170,7 +162,7 @@ function Logo() {
 }
 
 function MiniStatCard({
-  label, value, color, icon, suffix = '%',
+  label, value, color, icon, suffix = '',
 }: {
   label: string
   value: number
@@ -180,14 +172,13 @@ function MiniStatCard({
 }) {
   return (
     <div
-      className="flex flex-col gap-1 rounded-lg bg-white/[0.02] px-2.5 py-2"
-      style={{ border: `1px solid ${color}20` }}
+      className="flex flex-col gap-1 rounded-lg bg-zinc-900/35 border border-zinc-900 px-2 py-1.5"
     >
-      <div className="flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wider text-white/20">
+      <div className="flex items-center gap-1 text-[8px] font-bold uppercase tracking-wider text-zinc-500">
         <span style={{ color }}>{icon}</span>
         {label}
       </div>
-      <span className="text-lg font-black leading-none" style={{ color }}>
+      <span className="text-sm font-black leading-none text-zinc-200">
         {value}{suffix}
       </span>
     </div>

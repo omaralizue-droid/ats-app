@@ -21,15 +21,15 @@ function getTone(score: number): Tone {
 }
 
 const TONE_HEX: Record<Tone, string> = {
-  green: '#00FF66',
-  amber: '#FFB340',
-  red: '#FF2D55',
+  green: '#10b981',
+  amber: '#f59e0b',
+  red: '#ef4444',
 }
 
 const TONE_TEXT: Record<Tone, string> = {
-  green: 'text-[#00FF66]',
-  amber: 'text-[#FFB340]',
-  red: 'text-[#FF2D55]',
+  green: 'text-emerald-500',
+  amber: 'text-amber-500',
+  red: 'text-red-500',
 }
 
 const SIZE_CLASSES: Record<NonNullable<ScoreBadgeProps['size']>, {
@@ -40,19 +40,19 @@ const SIZE_CLASSES: Record<NonNullable<ScoreBadgeProps['size']>, {
 }> = {
   sm: {
     container: 'h-10 w-10 min-w-10',
-    number: 'text-sm font-bold',
+    number: 'text-sm font-bold font-mono',
     ring: 36,
     stroke: 3,
   },
   md: {
     container: 'h-16 w-16 min-w-16',
-    number: 'text-xl font-bold',
+    number: 'text-xl font-bold font-mono',
     ring: 56,
     stroke: 4,
   },
   lg: {
     container: 'h-28 w-28 min-w-28',
-    number: 'text-4xl font-bold',
+    number: 'text-4xl font-extrabold font-mono tracking-tight',
     ring: 104,
     stroke: 6,
   },
@@ -71,9 +71,6 @@ export function ScoreBadge({
   const radius = (sizes.ring - sizes.stroke) / 2
   const circumference = 2 * Math.PI * radius
 
-  // Count-up animation: only run when animateCount is true. We never call
-  // setState synchronously in the effect body — the update happens inside
-  // framer-motion's animation callback (an external system).
   const count = useMotionValue(0)
   const [animatedScore, setAnimatedScore] = useState(0)
 
@@ -87,10 +84,7 @@ export function ScoreBadge({
     return () => controls.stop()
   }, [score, animateCount, count])
 
-  // What we render: animated value when counting up, else the raw score.
   const displayScore = animateCount ? animatedScore : score
-
-  // Circular progress offset
   const offset = circumference - (displayScore / 100) * circumference
 
   return (
@@ -102,19 +96,10 @@ export function ScoreBadge({
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 220, damping: 18 }}
         className={cn(
-          'relative flex items-center justify-center rounded-full',
+          'relative flex items-center justify-center rounded-full bg-zinc-900 border border-zinc-800 shadow-sm',
           sizes.container,
         )}
-        style={{
-          boxShadow: `0 0 18px ${hex}33, inset 0 0 10px ${hex}22`,
-        }}
       >
-        {/* Pulsing glow halo */}
-        <span
-          aria-hidden
-          className="absolute inset-0 rounded-full animate-neon-pulse pointer-events-none"
-          style={{ boxShadow: `0 0 22px ${hex}40` }}
-        />
         {/* Background ring */}
         <svg
           className="absolute inset-0 -rotate-90"
@@ -127,7 +112,7 @@ export function ScoreBadge({
             cy={sizes.ring / 2}
             r={radius}
             fill="none"
-            stroke="rgba(255,255,255,0.07)"
+            stroke="rgba(255,255,255,0.03)"
             strokeWidth={sizes.stroke}
           />
           <motion.circle
@@ -142,15 +127,14 @@ export function ScoreBadge({
             initial={{ strokeDashoffset: circumference }}
             animate={{ strokeDashoffset: offset }}
             transition={{ duration: 1.1, ease: 'easeOut' }}
-            style={{ filter: `drop-shadow(0 0 4px ${hex})` }}
           />
         </svg>
         <div className="relative flex flex-col items-center justify-center">
-          <span className={cn(sizes.number, TONE_TEXT[tone])} style={{ textShadow: `0 0 12px ${hex}88` }}>
+          <span className={cn(sizes.number, TONE_TEXT[tone])}>
             {displayScore}
           </span>
           {size === 'lg' && (
-            <span className="text-[10px] font-medium text-muted-foreground tracking-widest mt-0.5">
+            <span className="text-[9px] font-bold text-zinc-500 tracking-wider mt-0.5 uppercase font-mono">
               / 100
             </span>
           )}
@@ -159,12 +143,12 @@ export function ScoreBadge({
       {size === 'lg' && (
         <div className="mt-2 flex flex-col items-center">
           <span
-            className="text-[11px] font-semibold uppercase tracking-[0.2em]"
-            style={{ color: hex, textShadow: `0 0 10px ${hex}66` }}
+            className="text-[10px] font-bold uppercase tracking-[0.2em]"
+            style={{ color: hex }}
           >
             {tone === 'green' ? 'Strong Match' : tone === 'amber' ? 'Partial Match' : 'Low Match'}
           </span>
-          <span className="mt-1 text-xs text-muted-foreground">Match Score</span>
+          <span className="mt-1 text-[11px] text-zinc-500 font-medium">Match Score</span>
         </div>
       )}
     </div>

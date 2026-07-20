@@ -139,12 +139,12 @@ export function UploadZone({ onFileUploaded, disabled = false, className }: Uplo
           }
         }}
         className={cn(
-          'glass relative flex flex-col items-center justify-center gap-4 rounded-2xl px-6 py-10 text-center transition-all',
+          'relative flex flex-col items-center justify-center gap-4 rounded-xl px-6 py-10 text-center transition-all bg-zinc-900/25 border border-zinc-850',
           'cursor-pointer select-none',
-          state === 'idle' && 'border-dashed border-2 border-[rgba(0,240,255,0.35)] hover:border-[rgba(0,240,255,0.7)] hover:bg-white/[0.07]',
-          state === 'dragging' && 'border-2 border-[#00F0FF] bg-[rgba(0,240,255,0.06)] neon-glow-cyan scale-[1.01]',
-          isBusy && 'cursor-default border-[rgba(0,255,102,0.4)]',
-          disabled && 'pointer-events-none opacity-60',
+          state === 'idle' && 'border-dashed border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/40',
+          state === 'dragging' && 'border-blue-500 bg-blue-500/[0.03] scale-[1.01]',
+          isBusy && 'cursor-default border-emerald-500/20 bg-zinc-900/40',
+          disabled && 'pointer-events-none opacity-50',
         )}
       >
         <input
@@ -164,20 +164,20 @@ export function UploadZone({ onFileUploaded, disabled = false, className }: Uplo
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-[rgba(0,240,255,0.1)] neon-border-cyan animate-neon-pulse"
+              className="flex h-12 w-12 items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800"
             >
-              <UploadCloud className="h-8 w-8 text-[#00F0FF]" />
+              <UploadCloud className="h-5 w-5 text-zinc-400" />
             </motion.div>
           )}
           {state === 'dragging' && (
             <motion.div
               key="dragging"
               initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1.15, opacity: 1 }}
+              animate={{ scale: 1.1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-[rgba(0,240,255,0.2)] neon-glow-cyan"
+              className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500/10 border border-blue-500/30"
             >
-              <FileText className="h-8 w-8 text-[#00F0FF]" />
+              <FileText className="h-5 w-5 text-blue-500" />
             </motion.div>
           )}
           {state === 'uploading' && (
@@ -186,9 +186,9 @@ export function UploadZone({ onFileUploaded, disabled = false, className }: Uplo
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-[rgba(0,240,255,0.12)]"
+              className="flex h-12 w-12 items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800"
             >
-              <Loader2 className="h-8 w-8 animate-spin text-[#00F0FF]" />
+              <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
             </motion.div>
           )}
           {state === 'done' && (
@@ -197,58 +197,58 @@ export function UploadZone({ onFileUploaded, disabled = false, className }: Uplo
               initial={{ scale: 0.6, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.6, opacity: 0 }}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-[rgba(0,255,102,0.15)] neon-border-green"
+              className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-500/10 border border-emerald-500/30"
             >
-              <CheckCircle2 className="h-8 w-8 text-[#00FF66]" />
+              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* Text content */}
-        <div className="flex flex-col items-center gap-1.5">
+        <div className="flex flex-col items-center gap-1">
           <AnimatePresence mode="wait">
             {state === 'idle' && (
               <motion.div
                 key="idle-text"
-                initial={{ opacity: 0, y: 6 }}
+                initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                className="flex flex-col items-center gap-1.5"
+                exit={{ opacity: 0, y: -4 }}
+                className="flex flex-col items-center gap-1"
               >
-                <p className="text-base font-semibold tracking-tight text-foreground">
-                  Drag &amp; drop your resume here
+                <p className="text-sm font-semibold tracking-tight text-zinc-200">
+                  Upload a resume
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  or click to browse · {ACCEPTED_LABELS.join(' · ')}
+                <p className="text-xs text-zinc-500">
+                  Drag &amp; drop or click to browse · {ACCEPTED_LABELS.join(' · ')}
                 </p>
               </motion.div>
             )}
             {state === 'dragging' && (
               <motion.div
                 key="drag-text"
-                initial={{ opacity: 0, y: 6 }}
+                initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                className="flex flex-col items-center gap-1.5"
+                exit={{ opacity: 0, y: -4 }}
+                className="flex flex-col items-center gap-1"
               >
-                <p className="text-base font-semibold neon-text-cyan">Release to upload</p>
-                <p className="text-xs text-muted-foreground">Parsing will begin instantly</p>
+                <p className="text-sm font-semibold text-blue-500">Release to upload</p>
+                <p className="text-xs text-zinc-400">Parsing will begin instantly</p>
               </motion.div>
             )}
             {(state === 'uploading' || state === 'done') && (
               <motion.div
                 key="busy-text"
-                initial={{ opacity: 0, y: 6 }}
+                initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                className="flex flex-col items-center gap-1.5"
+                exit={{ opacity: 0, y: -4 }}
+                className="flex flex-col items-center gap-1"
               >
-                <p className="flex items-center gap-2 text-sm font-medium text-foreground">
-                  <FileText className="h-4 w-4 text-[#00F0FF]" />
-                  <span className="max-w-[260px] truncate">{fileName}</span>
+                <p className="flex items-center gap-2 text-xs font-semibold text-zinc-300">
+                  <FileText className="h-3.5 w-3.5 text-blue-500" />
+                  <span className="max-w-[200px] truncate">{fileName}</span>
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  {state === 'uploading' ? 'Reading resume…' : 'Resume ready · sending to AI…'}
+                <p className="text-[11px] text-zinc-500">
+                  {state === 'uploading' ? 'Reading resume…' : 'Sending to AI engine…'}
                 </p>
               </motion.div>
             )}
@@ -262,42 +262,38 @@ export function UploadZone({ onFileUploaded, disabled = false, className }: Uplo
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="w-full max-w-sm"
+              className="w-full max-w-[240px]"
             >
-              <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+              <div className="relative h-1 w-full overflow-hidden rounded-full bg-zinc-800">
                 <motion.div
-                  className="absolute inset-y-0 left-0 rounded-full"
-                  style={{
-                    background: 'linear-gradient(90deg, #00F0FF 0%, #00FF66 100%)',
-                    boxShadow: '0 0 12px rgba(0,240,255,0.6)',
-                  }}
+                  className="absolute inset-y-0 left-0 rounded-full bg-blue-500"
                   animate={{ width: `${progress}%` }}
                   transition={{ duration: 0.1, ease: 'linear' }}
                 />
               </div>
-              <div className="mt-1.5 flex items-center justify-between text-[10px] text-muted-foreground">
+              <div className="mt-1 flex items-center justify-between text-[9px] text-zinc-500 font-mono">
                 <span>{progress}%</span>
-                <span>~ 1 sec</span>
+                <span>~ 1s</span>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Browse button + reset (only when idle) */}
+        {/* Browse button (only when idle) */}
         {state === 'idle' && (
-          <div className="mt-1 flex items-center gap-3">
+          <div className="mt-1">
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="border-[rgba(0,240,255,0.4)] bg-transparent text-[#00F0FF] hover:bg-[rgba(0,240,255,0.1)] hover:text-[#00F0FF]"
+              className="border-zinc-800 bg-zinc-900/50 text-zinc-350 hover:bg-zinc-900 hover:text-zinc-100"
               onClick={(e) => {
                 e.stopPropagation()
                 inputRef.current?.click()
               }}
               disabled={disabled}
             >
-              <UploadCloud className="h-4 w-4" />
+              <UploadCloud className="h-3.5 w-3.5" />
               Browse files
             </Button>
           </div>
@@ -309,7 +305,7 @@ export function UploadZone({ onFileUploaded, disabled = false, className }: Uplo
             type="button"
             variant="ghost"
             size="sm"
-            className="absolute right-3 top-3 h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+            className="absolute right-2 top-2 h-6 w-6 p-0 text-zinc-500 hover:text-zinc-200"
             onClick={(e) => {
               e.stopPropagation()
               setState('idle')
@@ -317,22 +313,22 @@ export function UploadZone({ onFileUploaded, disabled = false, className }: Uplo
               setProgress(0)
             }}
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5" />
           </Button>
         )}
 
         {/* File type hint */}
         {state === 'idle' && (
-          <div className="absolute bottom-3 left-0 right-0 flex flex-wrap items-center justify-center gap-1.5 px-4">
+          <div className="absolute bottom-2.5 left-0 right-0 flex flex-wrap items-center justify-center gap-1 px-4">
             {ACCEPTED_LABELS.map((label) => (
               <span
                 key={label}
-                className="rounded-md border border-white/10 bg-white/[0.03] px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
+                className="rounded border border-zinc-800/40 bg-zinc-900/20 px-1 py-0.5 text-[9px] font-semibold text-zinc-500"
               >
                 {label}
               </span>
             ))}
-            <span className="text-[10px] text-muted-foreground">· Max 10MB</span>
+            <span className="text-[9px] text-zinc-650">· Max 10MB</span>
           </div>
         )}
       </motion.div>

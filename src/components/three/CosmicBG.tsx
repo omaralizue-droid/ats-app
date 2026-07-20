@@ -28,6 +28,7 @@ export default function CosmicBG() {
   useFrame(({ clock }) => {
     if (!matRef.current) return
     matRef.current.uniforms.uTime.value = clock.getElapsedTime()
+    matRef.current.uniforms.uResolution.value.set(size.width, size.height)
   })
 
   return (

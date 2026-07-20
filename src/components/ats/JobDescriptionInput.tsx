@@ -37,22 +37,22 @@ export function JobDescriptionInput({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className={cn('glass rounded-2xl p-5', className)}
+      className={cn('bg-zinc-950 border border-zinc-900 rounded-xl p-5', className)}
     >
       {/* Header */}
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[rgba(0,240,255,0.1)] neon-border-cyan">
-            <Target className="h-4 w-4 text-[#00F0FF]" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10 border border-blue-500/20">
+            <Target className="h-4 w-4 text-blue-500" />
           </div>
           <div className="flex flex-col">
             <label
               htmlFor="jd-input"
-              className="text-sm font-semibold tracking-tight text-foreground"
+              className="text-sm font-semibold tracking-tight text-zinc-200"
             >
               Target Job Description
             </label>
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-[11px] text-zinc-500">
               Paste the role spec to enable AI matching
             </span>
           </div>
@@ -66,10 +66,10 @@ export function JobDescriptionInput({
               initial={{ opacity: 0, scale: 0.85 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.85 }}
-              className="flex items-center gap-1.5 rounded-full border border-[rgba(0,255,102,0.4)] bg-[rgba(0,255,102,0.08)] px-2.5 py-1"
+              className="flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5"
             >
-              <CheckCircle2 className="h-3.5 w-3.5 text-[#00FF66]" />
-              <span className="text-[11px] font-medium text-[#00FF66]">JD ready</span>
+              <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+              <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">JD ready</span>
             </motion.div>
           ) : (
             <motion.div
@@ -77,10 +77,10 @@ export function JobDescriptionInput({
               initial={{ opacity: 0, scale: 0.85 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.85 }}
-              className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1"
+              className="flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900 px-2.5 py-0.5"
             >
-              <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-[11px] font-medium text-muted-foreground">No JD yet</span>
+              <FileText className="h-3 w-3 text-zinc-550" />
+              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">No JD yet</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -92,12 +92,12 @@ export function JobDescriptionInput({
           id="jd-input"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Paste the job description here to enable AI matching..."
+          placeholder="Paste the job description here (minimum 60 characters)..."
           className={cn(
-            'custom-scroll min-h-[200px] resize-y rounded-xl border bg-black/30 px-4 py-3 text-sm leading-relaxed',
-            'placeholder:text-muted-foreground/70',
-            'focus-visible:border-[#00F0FF] focus-visible:ring-[#00F0FF]/30',
-            isReady && 'border-[rgba(0,255,102,0.3)]',
+            'custom-scroll min-h-[200px] resize-y rounded-lg border border-zinc-850 bg-zinc-900/10 px-4 py-3 text-sm leading-relaxed text-zinc-200',
+            'placeholder:text-zinc-500/70',
+            'focus-visible:border-blue-500 focus-visible:ring-blue-500/25',
+            isReady && 'border-emerald-500/20 bg-zinc-900/5',
           )}
         />
         {/* Clear button */}
@@ -114,7 +114,7 @@ export function JobDescriptionInput({
                 variant="ghost"
                 size="sm"
                 onClick={handleClear}
-                className="h-7 gap-1 px-2 text-[11px] text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                className="h-6 gap-1 px-2 text-[10px] text-zinc-400 hover:bg-zinc-800 hover:text-zinc-150 font-semibold"
                 aria-label="Clear job description"
               >
                 <X className="h-3 w-3" />
@@ -126,15 +126,15 @@ export function JobDescriptionInput({
       </div>
 
       {/* Footer: char count + hint */}
-      <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
+      <div className="mt-2 flex items-center justify-between text-[11px] text-zinc-550">
         <span>
           {charCount === 0
-            ? 'Tip: include required skills, experience level, and responsibilities for best results.'
+            ? 'Tip: include required skills and seniority for better precision.'
             : `${charCount.toLocaleString()} characters`}
         </span>
         {charCount > 0 && charCount < minLength && (
-          <span className="text-[#FFB340]">
-            {minLength - charCount} more chars to unlock matching
+          <span className="text-amber-500/90 font-medium">
+            {minLength - charCount} more characters to unlock matching
           </span>
         )}
       </div>
