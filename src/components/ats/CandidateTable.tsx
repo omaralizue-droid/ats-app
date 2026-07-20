@@ -98,26 +98,26 @@ export function CandidateTable({
   }
 
   return (
-    <div className={cn('bg-zinc-950 border border-zinc-900 w-full overflow-hidden rounded-xl', className)}>
+    <div className={cn('glass w-full overflow-hidden rounded-xl', className)}>
       {/* Desktop / tablet: full table */}
       <div className="hidden md:block">
         <div className="custom-scroll overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-zinc-900 hover:bg-transparent bg-zinc-900/10">
-                <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+              <TableRow className="border-white/[0.03] hover:bg-transparent bg-white/[0.01]">
+                <TableHead className="px-4 py-3 text-[9px] font-bold uppercase tracking-wider text-zinc-500 font-mono">
                   Candidate
                 </TableHead>
-                <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                <TableHead className="px-4 py-3 text-[9px] font-bold uppercase tracking-wider text-zinc-500 font-mono">
                   Match
                 </TableHead>
-                <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                <TableHead className="px-4 py-3 text-[9px] font-bold uppercase tracking-wider text-zinc-500 font-mono">
                   Skills
                 </TableHead>
-                <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                <TableHead className="px-4 py-3 text-[9px] font-bold uppercase tracking-wider text-zinc-500 font-mono">
                   Status
                 </TableHead>
-                <TableHead className="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                <TableHead className="px-4 py-3 text-right text-[9px] font-bold uppercase tracking-wider text-zinc-500 font-mono">
                   Actions
                 </TableHead>
               </TableRow>
@@ -172,7 +172,6 @@ function CandidateRow({
   onSelectCandidate: (c: Candidate) => void
   onStatusChange: (id: string, status: CandidateStatus) => void
 }) {
-  const meta = STATUS_META[candidate.status]
   const visibleSkills = candidate.topSkills.slice(0, 4)
   const extraCount = candidate.topSkills.length - visibleSkills.length
 
@@ -184,36 +183,37 @@ function CandidateRow({
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.4) }}
       className={cn(
-        'group relative border-b border-zinc-900 transition-colors',
-        'hover:bg-zinc-900/30',
+        'group relative border-b border-white/[0.03] transition-colors',
+        'hover:bg-white/[0.01]',
       )}
     >
       <TableCell className="relative px-4 py-3">
         <span
           aria-hidden
-          className="absolute inset-y-0 left-0 w-[2px] origin-top scale-y-0 bg-blue-500 transition-transform duration-200 group-hover:scale-y-100"
+          className="absolute inset-y-0 left-0 w-[2px] origin-top scale-y-0 bg-[#00f0ff] transition-transform duration-200 group-hover:scale-y-100"
+          style={{ boxShadow: '0 0 8px #00f0ff' }}
         />
         <button
           onClick={() => onSelectCandidate(candidate)}
-          className="flex items-center gap-3 text-left"
+          className="flex items-center gap-3 text-left cursor-pointer"
         >
           <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-bold text-blue-500 bg-blue-500/10 border border-blue-500/20"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20"
           >
             {getInitials(candidate.name)}
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-zinc-200 group-hover:text-blue-500 transition-colors">
+            <span className="text-xs font-bold text-zinc-200 group-hover:text-blue-400 transition-colors uppercase tracking-wider font-mono">
               {candidate.name}
             </span>
-            <span className="flex items-center gap-1 text-[11px] text-zinc-500">
-              <Mail className="h-3.5 w-3.5 opacity-60" />
-              <span className="max-w-[200px] truncate">{candidate.email}</span>
+            <span className="flex items-center gap-1.5 text-[10px] text-zinc-500">
+              <Mail className="h-3.5 w-3.5 opacity-40" />
+              <span className="max-w-[200px] truncate font-mono">{candidate.email}</span>
             </span>
             {candidate.latestRole && (
-              <span className="flex items-center gap-1 text-[11px] text-zinc-500">
-                <Briefcase className="h-3.5 w-3.5 opacity-60" />
-                <span className="max-w-[200px] truncate">
+              <span className="flex items-center gap-1.5 text-[10px] text-zinc-550 mt-0.5">
+                <Briefcase className="h-3.5 w-3.5 opacity-40" />
+                <span className="max-w-[200px] truncate font-mono">
                   {candidate.latestRole}
                   {candidate.latestCompany ? ` · ${candidate.latestCompany}` : ''}
                 </span>
@@ -228,22 +228,22 @@ function CandidateRow({
       </TableCell>
 
       <TableCell className="px-4 py-3">
-        <div className="flex flex-wrap items-center gap-1 max-w-[280px]">
+        <div className="flex flex-wrap items-center gap-1 max-w-[280px] font-mono">
           {visibleSkills.map((s) => (
             <span
               key={s}
-              className="rounded bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-300"
+              className="rounded bg-white/[0.01] border border-white/[0.03] px-1.5 py-0.5 text-[9px] font-bold text-zinc-400 uppercase"
             >
               {s}
             </span>
           ))}
           {extraCount > 0 && (
-            <span className="rounded bg-zinc-900/30 border border-zinc-900 px-1 py-0.5 text-[9px] font-semibold text-zinc-500">
+            <span className="rounded bg-white/[0.02] border border-white/[0.04] px-1 py-0.5 text-[8px] font-bold text-zinc-600">
               +{extraCount}
             </span>
           )}
           {candidate.topSkills.length === 0 && (
-            <span className="text-[11px] text-zinc-650">—</span>
+            <span className="text-[10px] text-zinc-650 font-mono">—</span>
           )}
         </div>
       </TableCell>
@@ -260,9 +260,9 @@ function CandidateRow({
           variant="ghost"
           size="sm"
           onClick={() => onSelectCandidate(candidate)}
-          className="gap-1 border border-zinc-850 bg-zinc-900/50 text-zinc-350 hover:border-zinc-700 hover:bg-zinc-850 hover:text-zinc-100"
+          className="h-8 gap-1.5 border border-white/[0.04] bg-white/[0.02] text-zinc-300 hover:border-white/[0.08] hover:bg-white/[0.04] hover:text-white text-[10px] font-mono uppercase tracking-wider cursor-pointer"
         >
-          <Eye className="h-3.5 w-3.5" />
+          <Eye className="h-3.5 w-3.5 text-blue-400" />
           View
         </Button>
       </TableCell>
@@ -295,7 +295,7 @@ function CandidateCardMobile({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.3) }}
-      className="relative overflow-hidden rounded-xl border border-zinc-900 bg-zinc-950 p-3.5"
+      className="relative overflow-hidden rounded-xl border border-white/[0.03] bg-zinc-950/40 p-4"
     >
       <div className="flex items-start justify-between gap-3">
         <button
@@ -303,17 +303,17 @@ function CandidateCardMobile({
           className="flex flex-1 items-center gap-3 text-left"
         >
           <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-xs font-bold text-blue-500 bg-blue-500/10 border border-blue-500/20"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20"
           >
             {getInitials(candidate.name)}
           </div>
-          <div className="flex min-w-0 flex-col">
-            <span className="truncate text-sm font-semibold text-zinc-200">
+          <div className="flex min-w-0 flex-col font-mono">
+            <span className="truncate text-xs font-bold text-zinc-200 uppercase tracking-wider">
               {candidate.name}
             </span>
-            <span className="truncate text-[11px] text-zinc-500">{candidate.email}</span>
+            <span className="truncate text-[10px] text-zinc-500 mt-0.5">{candidate.email}</span>
             {candidate.latestRole && (
-              <span className="truncate text-[11px] text-zinc-550">
+              <span className="truncate text-[10px] text-zinc-600 mt-0.5">
                 {candidate.latestRole}
                 {candidate.latestCompany ? ` · ${candidate.latestCompany}` : ''}
               </span>
@@ -323,23 +323,23 @@ function CandidateCardMobile({
         <ScoreBadge score={candidate.matchScore} size="sm" animateCount={false} />
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-1">
+      <div className="mt-4 flex flex-wrap items-center gap-1 font-mono">
         {visibleSkills.map((s) => (
           <span
             key={s}
-            className="rounded bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-300"
+            className="rounded bg-white/[0.01] border border-white/[0.03] px-1.5 py-0.5 text-[9px] font-bold text-zinc-400 uppercase"
           >
             {s}
           </span>
         ))}
         {extraCount > 0 && (
-          <span className="rounded bg-zinc-900/30 border border-zinc-900 px-1 py-0.5 text-[9px] font-semibold text-zinc-500">
+          <span className="rounded bg-white/[0.02] border border-white/[0.04] px-1 py-0.5 text-[8px] font-bold text-zinc-650">
             +{extraCount}
           </span>
         )}
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-2">
+      <div className="mt-4 flex items-center justify-between gap-2">
         <StatusDropdown
           status={candidate.status}
           onChange={(s) => onStatusChange(candidate.id, s)}
@@ -348,9 +348,9 @@ function CandidateCardMobile({
           variant="ghost"
           size="sm"
           onClick={() => onSelectCandidate(candidate)}
-          className="gap-1 border border-zinc-850 bg-zinc-900/50 text-zinc-350 hover:border-zinc-700 hover:bg-zinc-850 hover:text-zinc-100"
+          className="h-8 gap-1.5 border border-white/[0.04] bg-white/[0.02] text-zinc-300 hover:border-white/[0.08] hover:bg-white/[0.04] hover:text-white text-[10px] font-mono uppercase tracking-wider"
         >
-          <Eye className="h-3.5 w-3.5" />
+          <Eye className="h-3.5 w-3.5 text-blue-400" />
           View
         </Button>
       </div>
@@ -377,7 +377,7 @@ function StatusDropdown({
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="group flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"
+          className="group flex items-center gap-1.5 rounded border px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider transition-all hover:brightness-110 cursor-pointer font-mono"
           style={{
             color: meta.color,
             background: meta.bg,
@@ -391,12 +391,12 @@ function StatusDropdown({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
-        className="min-w-[150px] border-zinc-900 bg-zinc-950/95 backdrop-blur-md"
+        className="min-w-[150px] border-white/[0.05] bg-zinc-950/95 backdrop-blur-xl font-mono"
       >
-        <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-wider text-zinc-500">
+        <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-wider text-zinc-550">
           Change status
         </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-zinc-900" />
+        <DropdownMenuSeparator className="bg-white/[0.03]" />
         {STATUS_OPTIONS.map((opt) => {
           const m = STATUS_META[opt]
           const Icon = m.icon
@@ -406,17 +406,18 @@ function StatusDropdown({
               key={opt}
               onClick={() => onChange(opt)}
               className={cn(
-                'flex items-center gap-2 rounded-md px-2 py-1.5 text-xs font-semibold cursor-pointer',
-                isActive && 'bg-zinc-900',
+                'flex items-center gap-2 rounded px-2 py-1.5 text-[10px] uppercase font-bold tracking-wider cursor-pointer transition-colors',
+                isActive ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]',
               )}
             >
               <Icon className="h-3.5 w-3.5" style={{ color: m.color }} />
-              <span style={{ color: isActive ? m.color : undefined }} className="font-semibold text-zinc-350">
+              <span style={{ color: isActive ? m.color : undefined }} className="text-zinc-350">
                 {m.label}
               </span>
               {isActive && (
                 <span
-                  className="ml-auto h-1 w-1 rounded-full bg-blue-500"
+                  className="ml-auto h-1.5 w-1.5 rounded-full bg-[#00f0ff]"
+                  style={{ boxShadow: '0 0 8px #00f0ff' }}
                 />
               )}
             </DropdownMenuItem>

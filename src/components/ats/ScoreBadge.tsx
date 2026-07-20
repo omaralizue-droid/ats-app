@@ -96,7 +96,7 @@ export function ScoreBadge({
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 220, damping: 18 }}
         className={cn(
-          'relative flex items-center justify-center rounded-full bg-zinc-900 border border-zinc-800 shadow-sm',
+          'relative flex items-center justify-center rounded-full bg-zinc-950/50 border border-white/[0.03] shadow-2xl backdrop-blur-md',
           sizes.container,
         )}
       >
@@ -112,7 +112,7 @@ export function ScoreBadge({
             cy={sizes.ring / 2}
             r={radius}
             fill="none"
-            stroke="rgba(255,255,255,0.03)"
+            stroke="rgba(255,255,255,0.01)"
             strokeWidth={sizes.stroke}
           />
           <motion.circle
@@ -127,28 +127,24 @@ export function ScoreBadge({
             initial={{ strokeDashoffset: circumference }}
             animate={{ strokeDashoffset: offset }}
             transition={{ duration: 1.1, ease: 'easeOut' }}
+            style={{ filter: `drop-shadow(0 0 ${size === 'lg' ? '12px' : '6px'} ${hex}75)` }}
           />
         </svg>
-        <div className="relative flex flex-col items-center justify-center">
-          <span className={cn(sizes.number, TONE_TEXT[tone])}>
-            {displayScore}
+        <div className="relative flex flex-col items-center justify-center font-mono">
+          <span className={cn(sizes.number, TONE_TEXT[tone])} style={{ textShadow: `0 0 10px ${hex}33` }}>
+            {displayScore}%
           </span>
-          {size === 'lg' && (
-            <span className="text-[9px] font-bold text-zinc-500 tracking-wider mt-0.5 uppercase font-mono">
-              / 100
-            </span>
-          )}
         </div>
       </motion.div>
       {size === 'lg' && (
-        <div className="mt-2 flex flex-col items-center">
+        <div className="mt-2.5 flex flex-col items-center font-mono">
           <span
-            className="text-[10px] font-bold uppercase tracking-[0.2em]"
+            className="text-[9px] font-extrabold uppercase tracking-wider"
             style={{ color: hex }}
           >
-            {tone === 'green' ? 'Strong Match' : tone === 'amber' ? 'Partial Match' : 'Low Match'}
+            {tone === 'green' ? 'Strong Match' : tone === 'amber' ? 'Potential Match' : 'Weak Alignment'}
           </span>
-          <span className="mt-1 text-[11px] text-zinc-500 font-medium">Match Score</span>
+          <span className="mt-0.5 text-[9px] text-zinc-550 uppercase tracking-widest font-bold">Rubric Index</span>
         </div>
       )}
     </div>

@@ -49,10 +49,10 @@ const NAV_ITEMS = [
 export function Sidebar({ activeView, onNavigate, stats, className }: SidebarProps) {
   return (
     <>
-      {/* Desktop sidebar (md+) */}
+      {/* Desktop sidebar */}
       <aside
         className={cn(
-          'bg-zinc-950 sticky top-0 hidden h-screen w-[240px] shrink-0 flex-col border-r border-zinc-900 md:flex',
+          'glass sticky top-0 hidden h-screen w-[240px] shrink-0 flex-col border-r border-white/[0.03] bg-zinc-950/20 md:flex',
           className,
         )}
       >
@@ -64,7 +64,7 @@ export function Sidebar({ activeView, onNavigate, stats, className }: SidebarPro
       </aside>
 
       {/* Mobile top bar */}
-      <div className="bg-zinc-950 border-b border-zinc-900 sticky top-0 z-30 flex items-center justify-between px-4 py-3 md:hidden">
+      <div className="bg-zinc-950/50 backdrop-blur-xl border-b border-white/[0.03] sticky top-0 z-30 flex items-center justify-between px-4 py-3 md:hidden">
         <Logo />
         <MobileNav
           activeView={activeView}
@@ -88,16 +88,16 @@ function SidebarContent({
   return (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b border-zinc-900 px-5">
+      <div className="flex h-16 items-center border-b border-white/[0.03] px-5 bg-white/[0.01]">
         <Logo />
       </div>
 
       {/* Nav */}
-      <nav className="custom-scroll flex-1 overflow-y-auto px-3 py-4">
-        <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
+      <nav className="custom-scroll flex-1 overflow-y-auto px-3 py-5">
+        <p className="mb-3 px-2 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-500 font-mono">
           Workspace
         </p>
-        <ul className="flex flex-col gap-1">
+        <ul className="flex flex-col gap-1.5">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon
             const isActive = activeView === item.value
@@ -106,19 +106,22 @@ function SidebarContent({
                 <button
                   onClick={() => onNavigate(item.value)}
                   className={cn(
-                    'group relative flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
+                    'group relative flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer',
                     isActive
-                      ? 'bg-zinc-900 text-zinc-100 shadow-sm border border-zinc-800'
-                      : 'text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200 border border-transparent',
+                      ? 'bg-white/[0.04] text-white border border-white/[0.05] shadow-lg shadow-black/20'
+                      : 'text-zinc-400 hover:bg-white/[0.02] hover:text-zinc-200 border border-transparent',
                   )}
                 >
                   <Icon
                     className={cn(
                       'h-4 w-4 shrink-0 transition-colors',
-                      isActive ? 'text-blue-500' : 'text-zinc-450 group-hover:text-zinc-300',
+                      isActive ? 'text-[#00f0ff]' : 'text-zinc-500 group-hover:text-zinc-400',
                     )}
                   />
-                  {item.label}
+                  <span className="flex-1 text-left">{item.label}</span>
+                  {isActive && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#00f0ff]" style={{ boxShadow: '0 0 8px #00f0ff' }} />
+                  )}
                 </button>
               </li>
             )
@@ -126,15 +129,15 @@ function SidebarContent({
         </ul>
       </nav>
 
-      <div className="border-t border-zinc-900 p-3">
-        <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 font-mono">
+      <div className="border-t border-white/[0.03] p-4 bg-white/[0.01]">
+        <p className="mb-3 px-1 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-500 font-mono">
           Pipeline
         </p>
-        <div className="grid grid-cols-2 gap-1.5 font-mono">
-          <MiniStatCard label="Total"       value={stats.total}       color="#3b82f6" icon={<Users    className="h-3 w-3" />} />
-          <MiniStatCard label="Shortlisted" value={stats.shortlisted} color="#10b981" icon={<ThumbsUp className="h-3 w-3" />} />
-          <MiniStatCard label="Avg score"   value={stats.avgScore}    color="#f59e0b" icon={<Gauge    className="h-3 w-3" />} suffix="%" />
-          <MiniStatCard label="Rejected"    value={stats.rejected}    color="#ef4444" icon={<X        className="h-3 w-3" />} />
+        <div className="grid grid-cols-2 gap-2 font-mono">
+          <MiniStatCard label="Total"       value={stats.total}       color="#00f0ff" icon={<Users    className="h-3.5 w-3.5" />} />
+          <MiniStatCard label="Shortlist"   value={stats.shortlisted} color="#10b981" icon={<ThumbsUp className="h-3.5 w-3.5" />} />
+          <MiniStatCard label="Avg Fit"     value={stats.avgScore}    color="#8b5cf6" icon={<Gauge    className="h-3.5 w-3.5" />} suffix="%" />
+          <MiniStatCard label="Rejected"    value={stats.rejected}    color="#ef4444" icon={<X        className="h-3.5 w-3.5" />} />
         </div>
       </div>
     </div>
@@ -145,16 +148,16 @@ function Logo() {
   return (
     <div className="flex items-center gap-2.5">
       <div
-        className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 border border-blue-500/20"
+        className="relative flex h-8 w-8 items-center justify-center rounded bg-blue-500/10 border border-blue-500/20 shadow-inner"
       >
-        <Radar className="h-4 w-4 text-blue-500" />
+        <Radar className="h-4 w-4 text-blue-400" />
       </div>
-      <div className="flex flex-col leading-none">
-        <span className="text-sm font-bold tracking-tight text-zinc-100">
+      <div className="flex flex-col leading-none font-mono">
+        <span className="text-xs font-bold tracking-wider text-white uppercase">
           NeonATS
         </span>
-        <span className="text-[9px] font-medium uppercase tracking-[0.2em] text-zinc-500">
-          AI Resume ATS
+        <span className="text-[8px] font-semibold uppercase tracking-[0.2em] text-zinc-650 mt-0.5">
+          AI screening Node
         </span>
       </div>
     </div>
@@ -172,13 +175,13 @@ function MiniStatCard({
 }) {
   return (
     <div
-      className="flex flex-col gap-1 rounded-lg bg-zinc-900/35 border border-zinc-900 px-2 py-1.5"
+      className="flex flex-col gap-1.5 rounded-lg bg-zinc-950/60 border border-white/[0.03] px-2.5 py-2"
     >
-      <div className="flex items-center gap-1 text-[8px] font-bold uppercase tracking-wider text-zinc-500">
+      <div className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-wider text-zinc-550">
         <span style={{ color }}>{icon}</span>
         {label}
       </div>
-      <span className="text-sm font-black leading-none text-zinc-200">
+      <span className="text-sm font-extrabold leading-none text-white tracking-tight">
         {value}{suffix}
       </span>
     </div>

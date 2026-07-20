@@ -62,7 +62,7 @@ export function StatCards({ candidates, className }: StatCardsProps) {
       key: 'total',
       label: 'Total Candidates',
       value: total,
-      color: '#3b82f6',
+      color: '#00f0ff',
       icon: Users,
     },
     {
@@ -70,7 +70,7 @@ export function StatCards({ candidates, className }: StatCardsProps) {
       label: 'Avg Match Score',
       value: avgScore,
       suffix: '%',
-      color: '#10b981',
+      color: '#8b5cf6',
       icon: Gauge,
       showProgress: true,
     },
@@ -115,19 +115,19 @@ function StatCard({ stat, index, max }: { stat: StatDef; index: number; max: num
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: Math.min(index * 0.08, 0.4), ease: 'easeOut' }}
       className={cn(
-        'bg-zinc-950 border border-zinc-900 group relative overflow-hidden rounded-xl p-4 sm:p-5',
-        'hover:bg-zinc-900/50 transition-colors',
+        'glass group relative overflow-hidden rounded-xl p-4 sm:p-5',
+        'hover:bg-white/[0.01] transition-colors',
       )}
     >
       <div className="relative flex items-start justify-between gap-2">
         <div className="flex min-w-0 flex-col">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 sm:text-[11px]">
+          <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-550 sm:text-[10px] font-mono">
             {stat.label}
           </span>
           <div className="mt-2 flex items-baseline gap-1 font-mono">
             <span
               className="text-2xl font-extrabold leading-none tracking-tight sm:text-3xl"
-              style={{ color: stat.color }}
+              style={{ color: stat.color, textShadow: `0 0 10px ${stat.color}30` }}
             >
               {animated}
             </span>
@@ -143,10 +143,10 @@ function StatCard({ stat, index, max }: { stat: StatDef; index: number; max: num
         </div>
 
         <div
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded"
           style={{
-            background: `${stat.color}15`,
-            border: `1px solid ${stat.color}25`,
+            background: `${stat.color}10`,
+            border: `1px solid ${stat.color}20`,
           }}
         >
           <Icon className="h-4 w-4" style={{ color: stat.color }} />
@@ -155,12 +155,13 @@ function StatCard({ stat, index, max }: { stat: StatDef; index: number; max: num
 
       {/* Progress bar for the avg score card */}
       {stat.showProgress && (
-        <div className="relative mt-3 h-1 w-full overflow-hidden rounded-full bg-zinc-800">
+        <div className="relative mt-3.5 h-1 w-full overflow-hidden rounded bg-zinc-950 border border-white/[0.02]">
           <motion.div
-            className="absolute inset-y-0 left-0 rounded-full bg-emerald-500"
+            className="absolute inset-y-0 left-0 rounded bg-purple-500"
             initial={{ width: 0 }}
             animate={{ width: `${progressPct}%` }}
             transition={{ duration: 0.9, ease: 'easeOut', delay: 0.2 }}
+            style={{ boxShadow: '0 0 6px #8b5cf6' }}
           />
         </div>
       )}
