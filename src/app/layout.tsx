@@ -15,19 +15,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NeonATS — AI Resume Screening",
+  title: "Zue ATS — AI Resume Screening",
   description:
-    "High-end AI-powered Applicant Tracking System. Upload resumes, match against job descriptions, and rank candidates with neon-grade precision.",
+    "High-end AI-powered Applicant Tracking System by Zue Group of Companies. Upload resumes, match against job descriptions, and rank candidates with precision.",
   keywords: [
     "ATS",
     "AI Resume",
     "Recruitment",
     "Candidate Screening",
     "Match Score",
+    "Zue Group",
   ],
-  authors: [{ name: "NeonATS" }],
+  authors: [{ name: "Zue Group of Companies" }],
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/zue-logo.png",
   },
 };
 

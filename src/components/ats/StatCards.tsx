@@ -62,7 +62,7 @@ export function StatCards({ candidates, className }: StatCardsProps) {
       key: 'total',
       label: 'Total Candidates',
       value: total,
-      color: '#00f0ff',
+      color: '#CC0000',
       icon: Users,
     },
     {

@@ -115,12 +115,12 @@ function SidebarContent({
                   <Icon
                     className={cn(
                       'h-4 w-4 shrink-0 transition-colors',
-                      isActive ? 'text-[#00f0ff]' : 'text-zinc-500 group-hover:text-zinc-400',
+                      isActive ? 'text-[#CC0000]' : 'text-zinc-500 group-hover:text-zinc-400',
                     )}
                   />
                   <span className="flex-1 text-left">{item.label}</span>
                   {isActive && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#00f0ff]" style={{ boxShadow: '0 0 8px #00f0ff' }} />
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#CC0000]" style={{ boxShadow: '0 0 8px #CC0000' }} />
                   )}
                 </button>
               </li>
@@ -134,7 +134,7 @@ function SidebarContent({
           Pipeline
         </p>
         <div className="grid grid-cols-2 gap-2 font-mono">
-          <MiniStatCard label="Total"       value={stats.total}       color="#00f0ff" icon={<Users    className="h-3.5 w-3.5" />} />
+          <MiniStatCard label="Total"       value={stats.total}       color="#CC0000" icon={<Users    className="h-3.5 w-3.5" />} />
           <MiniStatCard label="Shortlist"   value={stats.shortlisted} color="#10b981" icon={<ThumbsUp className="h-3.5 w-3.5" />} />
           <MiniStatCard label="Avg Fit"     value={stats.avgScore}    color="#8b5cf6" icon={<Gauge    className="h-3.5 w-3.5" />} suffix="%" />
           <MiniStatCard label="Rejected"    value={stats.rejected}    color="#ef4444" icon={<X        className="h-3.5 w-3.5" />} />
@@ -146,20 +146,14 @@ function SidebarContent({
 
 function Logo() {
   return (
-    <div className="flex items-center gap-2.5">
-      <div
-        className="relative flex h-8 w-8 items-center justify-center rounded bg-blue-500/10 border border-blue-500/20 shadow-inner"
-      >
-        <Radar className="h-4 w-4 text-blue-400" />
-      </div>
-      <div className="flex flex-col leading-none font-mono">
-        <span className="text-xs font-bold tracking-wider text-white uppercase">
-          NeonATS
-        </span>
-        <span className="text-[8px] font-semibold uppercase tracking-[0.2em] text-zinc-650 mt-0.5">
-          AI screening Node
-        </span>
-      </div>
+    <div className="flex items-center">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/zue-logo.png"
+        alt="Zue Group of Companies"
+        className="h-8 w-auto object-contain"
+        style={{ filter: 'brightness(1.05)' }}
+      />
     </div>
   )
 }

@@ -33,9 +33,9 @@ function AmbienceLayer() {
         className="pointer-events-none fixed inset-0 z-0"
         style={{
           background:
-            'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,240,255,0.07) 0%, transparent 70%),' +
-            'radial-gradient(ellipse 60% 40% at 85% 30%, rgba(0,255,102,0.05) 0%, transparent 60%),' +
-            'radial-gradient(ellipse 50% 60% at 10% 80%, rgba(0,240,255,0.04) 0%, transparent 60%)',
+            'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(204,0,0,0.08) 0%, transparent 70%),' +
+            'radial-gradient(ellipse 60% 40% at 85% 30%, rgba(180,0,0,0.05) 0%, transparent 60%),' +
+            'radial-gradient(ellipse 50% 60% at 10% 80%, rgba(204,0,0,0.04) 0%, transparent 60%)',
         }}
       />
       <div
@@ -43,8 +43,8 @@ function AmbienceLayer() {
         className="pointer-events-none fixed inset-0 z-0"
         style={{
           backgroundImage:
-            'linear-gradient(rgba(0,240,255,0.025) 1px, transparent 1px),' +
-            'linear-gradient(90deg, rgba(0,240,255,0.025) 1px, transparent 1px)',
+            'linear-gradient(rgba(204,0,0,0.018) 1px, transparent 1px),' +
+            'linear-gradient(90deg, rgba(204,0,0,0.018) 1px, transparent 1px)',
           backgroundSize: '48px 48px',
         }}
       />
@@ -56,7 +56,7 @@ function AmbienceLayer() {
 
 export default function LandingPage() {
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#090d16] text-[#e6edf7]">
+    <div className="relative min-h-screen overflow-x-hidden bg-[#0a0608] text-[#e6edf7]">
       <AmbienceLayer />
       <div className="relative z-10">
         <Navbar />
@@ -91,38 +91,16 @@ function Navbar() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
       className={`sticky top-0 z-50 flex items-center justify-between px-6 py-4 transition-all duration-300 md:px-12 lg:px-16 ${
-        scrolled ? 'border-b border-white/5 bg-[#090d16]/90 backdrop-blur-xl' : 'bg-transparent'
+        scrolled ? 'border-b border-white/5 bg-[#0a0608]/90 backdrop-blur-xl' : 'bg-transparent'
       }`}
     >
       <div className="flex items-center gap-2.5">
-        <div
-          className="relative flex h-9 w-9 items-center justify-center rounded-xl"
-          style={{
-            background: 'rgba(0,240,255,0.1)',
-            border: '1px solid rgba(0,240,255,0.4)',
-            boxShadow: '0 0 20px rgba(0,240,255,0.2)',
-          }}
-        >
-          <Radar className="h-5 w-5 text-[#00F0FF]" />
-          <motion.span
-            aria-hidden
-            className="absolute inset-0 rounded-xl"
-            animate={{
-              boxShadow: [
-                '0 0 0px rgba(0,240,255,0)',
-                '0 0 16px rgba(0,240,255,0.5)',
-                '0 0 0px rgba(0,240,255,0)',
-              ],
-            }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        </div>
-        <div className="flex flex-col leading-none">
-          <span className="gradient-text-cyan text-lg font-bold tracking-tight">NeonATS</span>
-          <span className="text-[8px] font-medium uppercase tracking-[0.22em] text-[#8b95a8]">
-            AI Resume ATS
-          </span>
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/zue-logo.png"
+          alt="Zue Group of Companies"
+          className="h-9 w-auto object-contain"
+        />
       </div>
 
       <div className="hidden items-center gap-8 md:flex">
@@ -150,10 +128,10 @@ function Navbar() {
         </Link>
         <Link
           href="/dashboard"
-          className="group flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-[#05070d] transition-all duration-200 hover:opacity-90"
+          className="group flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:opacity-90"
           style={{
-            background: 'linear-gradient(135deg, #00f0ff 0%, #00cc88 100%)',
-            boxShadow: '0 0 20px rgba(0,240,255,0.3)',
+            background: 'linear-gradient(135deg, #CC0000 0%, #ff3333 100%)',
+            boxShadow: '0 0 20px rgba(204,0,0,0.3)',
           }}
         >
           Launch App
@@ -175,9 +153,9 @@ function HeroSection() {
         transition={{ duration: 0.5 }}
         className="mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wider"
         style={{
-          background: 'rgba(0,240,255,0.08)',
-          border: '1px solid rgba(0,240,255,0.3)',
-          color: '#00F0FF',
+          background: 'rgba(204,0,0,0.08)',
+          border: '1px solid rgba(204,0,0,0.3)',
+          color: '#CC0000',
         }}
       >
         <Sparkles className="h-3 w-3" />
@@ -202,7 +180,7 @@ function HeroSection() {
         transition={{ duration: 0.6, delay: 0.2 }}
         className="mt-6 max-w-2xl text-base leading-relaxed text-[#8b95a8] sm:text-lg"
       >
-        NeonATS uses cutting-edge AI to instantly parse, score, and rank resumes against your job
+        Zue ATS uses cutting-edge AI to instantly parse, score, and rank resumes against your job
         descriptions — so your HR team focuses on the top candidates, not the paperwork.
       </motion.p>
 
@@ -216,8 +194,8 @@ function HeroSection() {
           href="/dashboard"
           className="group relative flex items-center gap-2.5 rounded-2xl px-8 py-4 text-base font-bold text-[#05070d] transition-all duration-200 hover:opacity-90"
           style={{
-            background: 'linear-gradient(135deg, #00f0ff 0%, #00cc88 100%)',
-            boxShadow: '0 0 32px rgba(0,240,255,0.4), 0 4px 20px rgba(0,0,0,0.3)',
+            background: 'linear-gradient(135deg, #CC0000 0%, #ff3333 100%)',
+            boxShadow: '0 0 32px rgba(204,0,0,0.4), 0 4px 20px rgba(0,0,0,0.3)',
           }}
         >
           <Zap className="h-5 w-5" />
@@ -227,7 +205,7 @@ function HeroSection() {
           href="#how-it-works"
           className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-8 py-4 text-base font-semibold text-[#e6edf7] transition-all hover:border-white/20 hover:bg-white/[0.06]"
         >
-          <Play className="h-4 w-4 text-[#00F0FF]" />
+          <Play className="h-4 w-4 text-[#CC0000]" />
           See How It Works
         </a>
       </motion.div>
@@ -250,14 +228,14 @@ function HeroSection() {
       >
         <div
           className="absolute -bottom-12 left-1/2 h-32 w-3/4 -translate-x-1/2 blur-3xl"
-          style={{ background: 'rgba(0,240,255,0.15)' }}
+          style={{ background: 'rgba(204,0,0,0.15)' }}
         />
         <div
           className="relative overflow-hidden rounded-2xl"
           style={{
-            background: 'rgba(15,20,34,0.9)',
-            border: '1px solid rgba(0,240,255,0.2)',
-            boxShadow: '0 0 80px rgba(0,240,255,0.1), 0 40px 100px rgba(0,0,0,0.5)',
+            background: 'rgba(15,8,8,0.9)',
+            border: '1px solid rgba(204,0,0,0.2)',
+            boxShadow: '0 0 80px rgba(204,0,0,0.1), 0 40px 100px rgba(0,0,0,0.5)',
           }}
         >
           {/* Browser chrome */}
@@ -274,8 +252,8 @@ function HeroSection() {
                 border: '1px solid rgba(255,255,255,0.06)',
               }}
             >
-              <div className="h-1.5 w-1.5 rounded-full bg-[#00FF66]" />
-              neonats.app/dashboard
+              <div className="h-1.5 w-1.5 rounded-full bg-[#CC0000]" />
+              zueats.app/dashboard
             </div>
           </div>
           <DashboardMockup />
@@ -289,9 +267,9 @@ function HeroSection() {
 
 function DashboardMockup() {
   const statData = [
-    { label: 'Total', value: '142', color: '#00F0FF' },
-    { label: 'Avg Score', value: '78%', color: '#00FF66' },
-    { label: 'Shortlisted', value: '38', color: '#00FF66' },
+    { label: 'Total', value: '142', color: '#CC0000' },
+    { label: 'Avg Score', value: '78%', color: '#10b981' },
+    { label: 'Shortlisted', value: '38', color: '#10b981' },
     { label: 'Reviewing', value: '65', color: '#FFB340' },
   ]
   const candidates = [
@@ -307,23 +285,23 @@ function DashboardMockup() {
       {/* Sidebar */}
       <div
         className="hidden w-[180px] shrink-0 flex-col border-r border-white/5 sm:flex"
-        style={{ background: '#0b1019' }}
+        style={{ background: '#0d0606' }}
       >
         <div className="flex h-12 items-center border-b border-white/5 px-4">
-          <div className="flex items-center gap-2">
-            <Radar className="h-4 w-4 text-[#00F0FF]" />
-            <span className="text-sm font-bold text-[#00F0FF]">NeonATS</span>
+          <div className="flex items-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/zue-logo.png" alt="Zue" className="h-6 w-auto object-contain" />
           </div>
         </div>
         {['Dashboard', 'Candidates', 'Upload', 'Analytics'].map((item, i) => (
           <div
             key={item}
             className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium ${
-              i === 0 ? 'bg-[rgba(0,240,255,0.06)] text-[#00F0FF]' : 'text-[#8b95a8]'
+              i === 0 ? 'bg-[rgba(204,0,0,0.06)] text-[#CC0000]' : 'text-[#8b95a8]'
             }`}
           >
             <div
-              className={`h-1.5 w-1.5 rounded-full ${i === 0 ? 'bg-[#00F0FF]' : 'bg-transparent'}`}
+              className={`h-1.5 w-1.5 rounded-full ${i === 0 ? 'bg-[#CC0000]' : 'bg-transparent'}`}
             />
             {item}
           </div>
@@ -494,7 +472,7 @@ function FeaturesSection() {
   return (
     <section id="features" className="px-6 py-24 md:px-12 lg:px-16">
       <FadeIn className="mb-16 text-center">
-        <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-[#00F0FF]">
+        <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-[#CC0000]">
           Features
         </span>
         <h2 className="text-3xl font-extrabold tracking-tight sm:text-5xl">
@@ -609,7 +587,7 @@ function HowItWorksSection() {
   return (
     <section id="how-it-works" className="px-6 py-24 md:px-12 lg:px-16">
       <FadeIn className="mb-16 text-center">
-        <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-[#00FF66]">
+        <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-[#CC0000]">
           How It Works
         </span>
         <h2 className="text-3xl font-extrabold tracking-tight sm:text-5xl">
@@ -621,7 +599,7 @@ function HowItWorksSection() {
         </p>
       </FadeIn>
       <div className="relative mx-auto max-w-4xl">
-        <div className="absolute left-8 top-0 h-full w-px bg-gradient-to-b from-[#00F0FF] via-[#00FF66] to-[#B388FF] opacity-20 md:left-1/2" />
+        <div className="absolute left-8 top-0 h-full w-px bg-gradient-to-b from-[#CC0000] via-[#ff3333] to-[#B388FF] opacity-20 md:left-1/2" />
         <div className="flex flex-col gap-12">
           {STEPS.map((step, i) => (
             <StepCard key={step.number} step={step} index={i} />
@@ -691,8 +669,8 @@ function StepCard({
 /* ── Stats bar ───────────────────────────────────────────────────────────── */
 
 const STATS = [
-  { value: '10x', label: 'Faster screening', color: '#00F0FF' },
-  { value: '94%', label: 'Accuracy vs. expert review', color: '#00FF66' },
+  { value: '10x', label: 'Faster screening', color: '#CC0000' },
+  { value: '94%', label: 'Accuracy vs. expert review', color: '#10b981' },
   { value: '3.2M+', label: 'Resumes processed', color: '#FFB340' },
   { value: '4.9★', label: 'Average rating', color: '#B388FF' },
 ]
@@ -724,7 +702,7 @@ const TESTIMONIALS = [
     name: 'Jessica Park',
     role: 'Head of Talent, FinTech Co.',
     avatar: 'JP',
-    color: '#00F0FF',
+    color: '#CC0000',
     quote:
       'NeonATS cut our time-to-shortlist from 3 days to under an hour. The AI reasoning is genuinely impressive — it catches nuances our human reviewers miss.',
     stars: 5,
@@ -824,7 +802,7 @@ const PLANS = [
     name: 'Pro',
     price: '$49',
     period: '/mo',
-    color: '#00F0FF',
+    color: '#CC0000',
     highlight: true,
     features: [
       'Unlimited resumes',
@@ -873,19 +851,19 @@ function PricingSection() {
               className="relative flex h-full flex-col rounded-2xl p-6"
               style={{
                 background: plan.highlight
-                  ? 'linear-gradient(160deg, rgba(0,240,255,0.07) 0%, rgba(0,255,102,0.04) 100%)'
-                  : 'rgba(18,24,38,0.6)',
+                   ? 'linear-gradient(160deg, rgba(204,0,0,0.07) 0%, rgba(180,0,0,0.04) 100%)'
+                   : 'rgba(18,10,10,0.6)',
                 border: plan.highlight
-                  ? '1px solid rgba(0,240,255,0.35)'
-                  : '1px solid rgba(255,255,255,0.06)',
-                boxShadow: plan.highlight ? '0 0 40px rgba(0,240,255,0.1)' : 'none',
+                   ? '1px solid rgba(204,0,0,0.35)'
+                   : '1px solid rgba(255,255,255,0.06)',
+                boxShadow: plan.highlight ? '0 0 40px rgba(204,0,0,0.1)' : 'none',
                 backdropFilter: 'blur(14px)',
               }}
             >
               {plan.highlight && (
                 <div
                   className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full px-4 py-1 text-[10px] font-bold uppercase tracking-wider text-[#05070d]"
-                  style={{ background: 'linear-gradient(135deg, #00f0ff, #00ff66)' }}
+                  style={{ background: 'linear-gradient(135deg, #CC0000, #ff3333)' }}
                 >
                   Most Popular
                 </div>
@@ -917,9 +895,9 @@ function PricingSection() {
                   style={
                     plan.highlight
                       ? {
-                          background: 'linear-gradient(135deg, #00f0ff, #00cc88)',
-                          color: '#05070d',
-                          boxShadow: '0 0 20px rgba(0,240,255,0.3)',
+                          background: 'linear-gradient(135deg, #CC0000, #ff3333)',
+                          color: '#ffffff',
+                          boxShadow: '0 0 20px rgba(204,0,0,0.3)',
                         }
                       : {
                           background: 'rgba(255,255,255,0.04)',
@@ -950,29 +928,29 @@ function CtaSection() {
           className="relative overflow-hidden rounded-3xl px-8 py-16 text-center"
           style={{
             background:
-              'linear-gradient(135deg, rgba(0,240,255,0.1) 0%, rgba(0,255,102,0.06) 100%)',
-            border: '1px solid rgba(0,240,255,0.25)',
-            boxShadow: '0 0 80px rgba(0,240,255,0.1)',
+              'linear-gradient(135deg, rgba(204,0,0,0.1) 0%, rgba(180,0,0,0.06) 100%)',
+            border: '1px solid rgba(204,0,0,0.25)',
+            boxShadow: '0 0 80px rgba(204,0,0,0.1)',
           }}
         >
           <div
             className="pointer-events-none absolute -left-20 -top-20 h-64 w-64 rounded-full blur-3xl"
-            style={{ background: 'rgba(0,240,255,0.12)' }}
+            style={{ background: 'rgba(204,0,0,0.12)' }}
           />
           <div
             className="pointer-events-none absolute -bottom-20 -right-20 h-64 w-64 rounded-full blur-3xl"
-            style={{ background: 'rgba(0,255,102,0.1)' }}
+            style={{ background: 'rgba(180,0,0,0.1)' }}
           />
           <div className="relative">
             <div
               className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl"
               style={{
-                background: 'rgba(0,240,255,0.1)',
-                border: '1px solid rgba(0,240,255,0.4)',
-                boxShadow: '0 0 32px rgba(0,240,255,0.25)',
+                background: 'rgba(204,0,0,0.1)',
+                border: '1px solid rgba(204,0,0,0.4)',
+                boxShadow: '0 0 32px rgba(204,0,0,0.25)',
               }}
             >
-              <Zap className="h-8 w-8 text-[#00F0FF]" />
+              <Zap className="h-8 w-8 text-[#CC0000]" />
             </div>
             <h2 className="mb-4 text-3xl font-extrabold tracking-tight sm:text-5xl">
               Ready to transform your hiring?
@@ -984,10 +962,10 @@ function CtaSection() {
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
               <Link
                 href="/dashboard"
-                className="flex items-center gap-2.5 rounded-2xl px-8 py-4 text-base font-bold text-[#05070d] hover:opacity-90"
+                className="flex items-center gap-2.5 rounded-2xl px-8 py-4 text-base font-bold text-white hover:opacity-90"
                 style={{
-                  background: 'linear-gradient(135deg, #00f0ff 0%, #00cc88 100%)',
-                  boxShadow: '0 0 32px rgba(0,240,255,0.4)',
+                  background: 'linear-gradient(135deg, #CC0000 0%, #ff3333 100%)',
+                  boxShadow: '0 0 32px rgba(204,0,0,0.4)',
                 }}
               >
                 <Sparkles className="h-5 w-5" />
@@ -1012,24 +990,16 @@ function CtaSection() {
 
 function Footer() {
   return (
-    <footer className="border-t border-white/5 bg-[#0b1019]/80 px-6 py-12 md:px-12 lg:px-16">
+    <footer className="border-t border-white/5 bg-[#0d0606]/80 px-6 py-12 md:px-12 lg:px-16">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="col-span-1 sm:col-span-2 lg:col-span-1">
             <div className="mb-4 flex items-center gap-2.5">
-              <div
-                className="flex h-8 w-8 items-center justify-center rounded-lg"
-                style={{
-                  background: 'rgba(0,240,255,0.1)',
-                  border: '1px solid rgba(0,240,255,0.3)',
-                }}
-              >
-                <Radar className="h-4 w-4 text-[#00F0FF]" />
-              </div>
-              <span className="gradient-text-cyan text-base font-bold">NeonATS</span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/zue-logo.png" alt="Zue Group of Companies" className="h-8 w-auto object-contain" />
             </div>
             <p className="mb-4 text-sm leading-relaxed text-[#8b95a8]">
-              AI-powered applicant tracking built for the modern recruiter. Screen smarter. Hire
+              AI-powered applicant tracking by Zue Group of Companies. Screen smarter. Hire
               faster.
             </p>
             <div className="flex gap-3">
@@ -1069,9 +1039,9 @@ function Footer() {
           ))}
         </div>
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-8 text-xs text-[#8b95a8] sm:flex-row">
-          <p>&copy; 2026 NeonATS. All rights reserved.</p>
+          <p>&copy; 2026 Zue Group of Companies. All rights reserved.</p>
           <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#00FF66] shadow-[0_0_6px_#00FF66]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#10b981] shadow-[0_0_6px_#10b981]" />
             All systems operational
           </div>
         </div>

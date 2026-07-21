@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 512" fill="none">
+  <!-- Z -->
+  <rect x="30" y="40" width="220" height="50" rx="12" fill="#CC0000"/>
+  <rect x="30" y="40" width="220" height="310" rx="0" fill="none"/>
+  <!-- Z shape -->
+  <path d="M30 40 H250 V90 L80 360 H260 V410 H30 V360 L200 90 H30 Z" fill="#CC0000"/>
+  <!-- Z dot (top left) -->
+  <circle cx="58" cy="26" r="22" fill="#CC0000"/>
+
+  <!-- U -->
+  <path d="M300 40 H360 V310 Q360 420 430 420 Q500 420 500 310 V40 H560 V310 Q560 460 430 460 Q300 460 300 310 Z" fill="#CC0000"/>
+  <!-- U dot top left -->
+  <circle cx="328" cy="26" r="22" fill="#CC0000"/>
+
+  <!-- i -->
+  <circle cx="620" cy="26" r="22" fill="#CC0000"/>
+  <rect x="602" y="80" width="36" height="330" rx="18" fill="#CC0000"/>
+
+  <!-- e -->
+  <path d="M700 250 Q700 80 820 80 Q940 80 940 230 Q940 240 938 250 H760 Q770 380 830 380 Q880 380 900 340 H940 Q910 460 820 460 Q700 460 700 250Z" fill="#CC0000"/>
+  <rect x="760" y="220" width="178" height="48" rx="6" fill="#CC0000"/>
+  <!-- e dot -->
+  <circle cx="960" cy="444" r="22" fill="#CC0000"/>
+
+  <!-- A GROUP OF COMPANIES -->
+  <text x="512" y="510" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" letter-spacing="8" fill="#CC0000" text-anchor="middle">A GROUP OF COMPANIES</text>
+</svg>
