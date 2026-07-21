@@ -209,6 +209,8 @@ export default function Home() {
       }
       const { candidate } = await createRes.json()
       setCandidates(prev => [candidate, ...prev].sort((a, b) => b.matchScore - a.matchScore))
+      setSelectedCandidate(candidate)
+      setDetailOpen(true)
       toast({ title: 'Resume analyzed', description: `${candidate.name} scored ${candidate.matchScore}% — ${candidate.verdict}.` })
     } catch (err) {
       toast({ title: 'Analysis failed', description: err instanceof Error ? err.message : 'Unexpected error.', variant: 'destructive' })
@@ -340,7 +342,16 @@ export default function Home() {
                   />
                 )}
                 {activeView === 'upload' && (
-                  <UploadView jdText={jdText} onJdChange={setJdText} onFileUploaded={handleFileUploaded} />
+                  <UploadView
+                    jdText={jdText}
+                    onJdChange={setJdText}
+                    onFileUploaded={handleFileUploaded}
+                    candidates={candidates}
+                    loading={loading}
+                    onSelectCandidate={handleSelectCandidate}
+                    onStatusChange={handleStatusChange}
+                    onDeleteCandidate={(id, name) => setCandidateToDelete({ id, name })}
+                  />
                 )}
                 {activeView === 'candidates' && (
                   <CandidatesView
@@ -632,37 +643,66 @@ function DashboardView({
 
 
 /* ── Upload view ─────────────────────────────────────────────────────────── */
-function UploadView({ jdText, onJdChange, onFileUploaded }: {
+function UploadView({
+  jdText, onJdChange, onFileUploaded,
+  candidates, loading, onSelectCandidate, onStatusChange, onDeleteCandidate,
+}: {
   jdText: string
   onJdChange: (v: string) => void
   onFileUploaded: (data: { fileName: string; file: File }) => void
+  candidates: Candidate[]
+  loading: boolean
+  onSelectCandidate: (c: Candidate) => void
+  onStatusChange: (id: string, status: CandidateStatus) => void
+  onDeleteCandidate: (id: string, name: string) => void
 }) {
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-      <div>
-        <SectionHeader
-          icon={<Zap className="h-3.5 w-3.5" />}
-          title="Resume Upload"
-          subtitle="PDF, DOCX, or TXT — up to 10MB"
-        />
-        <div className="mt-4">
-          <UploadZone onFileUploaded={onFileUploaded} disabled={jdText.trim().length < 60} />
-          {jdText.trim().length < 60 && (
-            <p className="mt-2.5 flex items-center gap-1.5 text-xs text-amber-500/90 font-medium">
-              <FileSearch className="h-3.5 w-3.5" />
-              A job description is required before uploading
-            </p>
-          )}
+    <div className="flex flex-col gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div>
+          <SectionHeader
+            icon={<Zap className="h-3.5 w-3.5" />}
+            title="Resume Upload"
+            subtitle="PDF, DOCX, or TXT — up to 10MB"
+          />
+          <div className="mt-4">
+            <UploadZone onFileUploaded={onFileUploaded} disabled={jdText.trim().length < 60} />
+            {jdText.trim().length < 60 && (
+              <p className="mt-2.5 flex items-center gap-1.5 text-xs text-amber-500/90 font-medium font-mono uppercase">
+                <FileSearch className="h-3.5 w-3.5" />
+                A job description is required before uploading
+              </p>
+            )}
+          </div>
+        </div>
+        <div>
+          <SectionHeader
+            icon={<FileSearch className="h-3.5 w-3.5" />}
+            title="Target Job Description"
+            subtitle="Paste the role requirements here"
+          />
+          <div className="mt-4">
+            <JobDescriptionInput value={jdText} onChange={onJdChange} />
+          </div>
         </div>
       </div>
+
+      <Divider />
+
       <div>
         <SectionHeader
-          icon={<FileSearch className="h-3.5 w-3.5" />}
-          title="Target Job Description"
-          subtitle="Paste the role requirements here"
+          icon={<Users className="h-3.5 w-3.5" />}
+          title="Uploaded Candidates & Results"
+          subtitle="View candidate analysis scores and inspect details"
         />
         <div className="mt-4">
-          <JobDescriptionInput value={jdText} onChange={onJdChange} />
+          <CandidateTable
+            candidates={candidates}
+            loading={loading}
+            onSelectCandidate={onSelectCandidate}
+            onStatusChange={onStatusChange}
+            onDeleteCandidate={onDeleteCandidate}
+          />
         </div>
       </div>
     </div>

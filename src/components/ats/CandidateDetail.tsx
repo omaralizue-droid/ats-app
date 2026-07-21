@@ -81,6 +81,20 @@ function getInitials(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
+function safeArray(val: unknown): string[] {
+  if (Array.isArray(val)) return val
+  if (typeof val === 'string' && val.trim()) {
+    try {
+      const parsed = JSON.parse(val)
+      if (Array.isArray(parsed)) return parsed
+      return [val]
+    } catch {
+      return [val]
+    }
+  }
+  return []
+}
+
 function formatDate(iso: string): string {
   try {
     const d = new Date(iso)
@@ -157,8 +171,9 @@ function CandidateDetailBody({
   onStatusChange: (id: string, status: CandidateStatus) => void
   onDeleteCandidate?: (id: string, name: string) => void
 }) {
-  const topSkills = useMemo(() => candidate.topSkills ?? [], [candidate.topSkills])
-  const missingSkills = useMemo(() => candidate.missingSkills ?? [], [candidate.missingSkills])
+  const topSkills = useMemo(() => safeArray(candidate?.topSkills), [candidate?.topSkills])
+  const keyStrengths = useMemo(() => safeArray(candidate?.keyStrengths), [candidate?.keyStrengths])
+  const missingSkills = useMemo(() => safeArray(candidate?.missingSkills), [candidate?.missingSkills])
 
   return (
     <motion.div
@@ -353,7 +368,7 @@ function CandidateDetailBody({
           {/* Key strengths */}
           <Section title="Key Strengths" icon={<Check className="h-4 w-4 text-emerald-400" />}>
             <BulletList
-              items={candidate.keyStrengths}
+              items={keyStrengths}
               tone="green"
               emptyText="No strengths highlighted"
             />
@@ -364,9 +379,9 @@ function CandidateDetailBody({
             title="Gaps & Concerns"
             icon={<AlertTriangle className="h-4 w-4 text-amber-400" />}
           >
-            {candidate.missingSkills.length > 0 ? (
+            {missingSkills.length > 0 ? (
               <BulletList
-                items={candidate.missingSkills}
+                items={missingSkills}
                 tone="red"
                 emptyText="No notable gaps"
               />

@@ -70,6 +70,20 @@ const STATUS_META: Record<
   },
 }
 
+function safeArray(val: unknown): string[] {
+  if (Array.isArray(val)) return val
+  if (typeof val === 'string' && val.trim()) {
+    try {
+      const parsed = JSON.parse(val)
+      if (Array.isArray(parsed)) return parsed
+      return [val]
+    } catch {
+      return [val]
+    }
+  }
+  return []
+}
+
 function getInitials(name: string): string {
   if (!name) return '?'
   const parts = name.trim().split(/\s+/)
@@ -176,8 +190,9 @@ function CandidateRow({
   onSelectCandidate: (c: Candidate) => void
   onStatusChange: (id: string, status: CandidateStatus) => void
 }) {
-  const visibleSkills = candidate.topSkills.slice(0, 4)
-  const extraCount = candidate.topSkills.length - visibleSkills.length
+  const allSkills = safeArray(candidate?.topSkills)
+  const visibleSkills = allSkills.slice(0, 4)
+  const extraCount = allSkills.length - visibleSkills.length
 
   return (
     <motion.tr
