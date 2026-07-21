@@ -110,6 +110,7 @@ export default function Home() {
 
   // Candidate deletion state
   const [candidateToDelete, setCandidateToDelete] = useState<{ id: string; name: string } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const fetchCandidates = useCallback(async () => {
     setLoading(true)
@@ -129,22 +130,39 @@ export default function Home() {
     fetchCandidates()
   }, [fetchCandidates])
 
-  const handleDeleteCandidate = useCallback(async (id: string) => {
+  const handleDeleteCandidate = useCallback(async (targetId: string) => {
+    if (!targetId) return
+    setIsDeleting(true)
     try {
-      const res = await fetch(`/api/candidates/${id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('Failed to delete candidate')
-      setCandidates((prev) => prev.filter((c) => c.id !== id))
-      if (selectedCandidate?.id === id) {
-        setDetailOpen(false)
-        setSelectedCandidate(null)
+      const res = await fetch(`/api/candidates/${targetId}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'Failed to delete candidate')
       }
-      toast({ title: 'Profile Deleted', description: 'Candidate profile removed successfully.' })
-    } catch {
-      toast({ title: 'Error', description: 'Could not delete candidate profile.', variant: 'destructive' })
+      
+      // Remove candidate from local list
+      setCandidates((prev) => prev.filter((c) => c.id !== targetId))
+      
+      // Close detail drawer if deleting current candidate
+      setSelectedCandidate((prev) => (prev?.id === targetId ? null : prev))
+      setDetailOpen(false)
+
+      toast({
+        title: 'Profile Deleted',
+        description: 'Candidate profile removed successfully.',
+      })
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Could not delete candidate profile.'
+      toast({
+        title: 'Delete Failed',
+        description: msg,
+        variant: 'destructive',
+      })
     } finally {
+      setIsDeleting(false)
       setCandidateToDelete(null)
     }
-  }, [selectedCandidate?.id])
+  }, [])
 
   // Stepper loop simulating steps for confidence building during processing
   useEffect(() => {
@@ -483,14 +501,23 @@ export default function Home() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-4 gap-2">
-            <AlertDialogCancel className="border-white/10 bg-white/[0.04] text-zinc-300 hover:bg-white/[0.08] hover:text-white text-[11px] uppercase font-bold cursor-pointer">
+            <AlertDialogCancel
+              disabled={isDeleting}
+              className="border-white/10 bg-white/[0.04] text-zinc-300 hover:bg-white/[0.08] hover:text-white text-[11px] uppercase font-bold cursor-pointer"
+            >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => candidateToDelete && handleDeleteCandidate(candidateToDelete.id)}
+              disabled={isDeleting}
+              onClick={(e) => {
+                e.preventDefault()
+                if (candidateToDelete?.id) {
+                  handleDeleteCandidate(candidateToDelete.id)
+                }
+              }}
               className="bg-red-600 hover:bg-red-700 text-white text-[11px] uppercase font-bold cursor-pointer border border-red-500/30 shadow-lg shadow-red-950/50"
             >
-              Delete Profile
+              {isDeleting ? 'Deleting...' : 'Delete Profile'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

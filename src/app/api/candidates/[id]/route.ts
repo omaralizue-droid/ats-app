@@ -5,7 +5,12 @@ import type { CandidateStatus } from '@/lib/types';
 
 const VALID_STATUSES: CandidateStatus[] = ['REVIEW', 'SHORTLIST', 'REJECT'];
 
-type RouteContext = { params: Promise<{ id: string }> };
+type RouteContext = { params: Promise<{ id: string }> | { id: string } };
+
+async function getParamId(ctx: RouteContext): Promise<string> {
+  const params = await ctx.params;
+  return params.id;
+}
 
 /**
  * PATCH /api/candidates/[id]
@@ -14,7 +19,7 @@ type RouteContext = { params: Promise<{ id: string }> };
  */
 export async function PATCH(req: NextRequest, ctx: RouteContext) {
   try {
-    const { id } = await ctx.params;
+    const id = await getParamId(ctx);
 
     const body = await req.json().catch(() => null);
     if (!body || typeof body.status !== 'string') {
@@ -57,11 +62,14 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
 
 /**
  * DELETE /api/candidates/[id]
- * Returns { success: true }. 404 if not found.
+ * Returns { success: true, id }. 404 if not found.
  */
 export async function DELETE(_req: NextRequest, ctx: RouteContext) {
   try {
-    const { id } = await ctx.params;
+    const id = await getParamId(ctx);
+    if (!id) {
+      return NextResponse.json({ error: 'Candidate ID parameter missing.' }, { status: 400 });
+    }
 
     const existing = await db.candidate.findUnique({ where: { id } });
     if (!existing) {
@@ -73,7 +81,7 @@ export async function DELETE(_req: NextRequest, ctx: RouteContext) {
 
     await db.candidate.delete({ where: { id } });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, id });
   } catch (err) {
     const message =
       err instanceof Error ? err.message : 'Failed to delete candidate.';
