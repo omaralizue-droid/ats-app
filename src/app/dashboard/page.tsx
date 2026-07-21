@@ -313,8 +313,8 @@ export default function Home() {
       <footer className="border-t border-white/[0.03] bg-zinc-950/20 backdrop-blur-md relative z-10">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 sm:px-8">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-blue-400" />
-            <span className="text-xs font-bold text-white font-mono uppercase tracking-wider">NeonATS</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/zue-logo.png" alt="Zue Group of Companies" className="h-5 w-auto object-contain" />
             <span className="text-[10px] text-zinc-550 font-mono">· Automated Screen Node</span>
           </div>
           <div className="flex items-center gap-4 text-[10px] text-zinc-600 font-mono uppercase tracking-wider">

@@ -430,7 +430,7 @@ const FEATURES = [
     icon: FileSearch,
     title: 'Smart JD Parsing',
     description:
-      'Paste any job description and NeonATS extracts must-have skills, nice-to-haves, and seniority benchmarks automatically.',
+      'Paste any job description and Zue ATS extracts must-have skills, nice-to-haves, and seniority benchmarks automatically.',
     color: '#00FF66',
     tag: 'Parsing',
   },
@@ -479,7 +479,7 @@ function FeaturesSection() {
           Everything your HR team needs
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-[#8b95a8]">
-          From upload to decision in seconds. NeonATS handles the heavy lifting so your recruiters
+          From upload to decision in seconds. Zue ATS handles the heavy lifting so your recruiters
           can focus on building great teams.
         </p>
       </FadeIn>
@@ -704,7 +704,7 @@ const TESTIMONIALS = [
     avatar: 'JP',
     color: '#CC0000',
     quote:
-      'NeonATS cut our time-to-shortlist from 3 days to under an hour. The AI reasoning is genuinely impressive — it catches nuances our human reviewers miss.',
+      'Zue ATS cut our time-to-shortlist from 3 days to under an hour. The AI reasoning is genuinely impressive — it catches nuances our human reviewers miss.',
     stars: 5,
   },
   {
@@ -956,7 +956,7 @@ function CtaSection() {
               Ready to transform your hiring?
             </h2>
             <p className="mx-auto mb-10 max-w-lg text-[#8b95a8]">
-              Join thousands of HR teams using NeonATS to find their best candidates faster,
+              Join thousands of HR teams using Zue ATS to find their best candidates faster,
               smarter, and more fairly.
             </p>
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
@@ -973,7 +973,7 @@ function CtaSection() {
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <a
-                href="mailto:hello@neonats.app"
+                href="mailto:hello@zuegroup.com"
                 className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-8 py-4 text-base font-semibold text-[#e6edf7] transition-all hover:border-white/20 hover:bg-white/[0.07]"
               >
                 Talk to Sales

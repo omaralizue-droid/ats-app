@@ -127,10 +127,12 @@ export default function LandingPage() {
       <nav className="fixed top-0 z-50 w-full border-b border-white/[0.03] bg-zinc-950/20 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded bg-blue-500/10 border border-blue-500/20 shadow-sm">
-              <Radar className="h-4 w-4 text-blue-400" />
-            </div>
-            <span className="text-sm font-bold tracking-tight text-white font-mono uppercase">NeonATS</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/zue-logo.png"
+              alt="Zue Group of Companies"
+              className="h-8 w-auto object-contain"
+            />
           </div>
           <Link
             href="/dashboard"
@@ -139,7 +141,7 @@ export default function LandingPage() {
             className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-300 hover:text-white transition-colors"
           >
             Launch Dashboard
-            <ArrowUpRight className="h-4 w-4 text-blue-400" />
+            <ArrowUpRight className="h-4 w-4 text-[#CC0000]" />
           </Link>
         </div>
       </nav>
@@ -252,7 +254,7 @@ export default function LandingPage() {
               <span className="h-2.5 w-2.5 rounded-full bg-zinc-800"></span>
               <span className="h-2.5 w-2.5 rounded-full bg-zinc-800"></span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-550 font-mono">NeonATS // Model Node Assessment</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-550 font-mono">Zue ATS // Model Node Assessment</span>
             <div className="w-12"></div>
           </div>
 
@@ -369,7 +371,7 @@ export default function LandingPage() {
       {/* Elegant minimalist glass footer */}
       <footer className="relative z-10 border-t border-white/[0.03] bg-zinc-950/20 py-8 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 text-xs text-zinc-650 font-mono">
-          <span>© 2026 NeonATS. Cinematic Screening Interface.</span>
+          <span>© 2026 Zue Group of Companies. Cinematic Screening Interface.</span>
           <div className="flex gap-4">
             <Link href="/dashboard" className="hover:text-white transition-colors">Launch App</Link>
           </div>
