@@ -39,7 +39,7 @@ export interface CandidateTableProps {
   loading?: boolean
   onSelectCandidate: (c: Candidate) => void
   onStatusChange: (id: string, status: CandidateStatus) => void
-  onDeleteCandidate: (id: string, name: string) => void
+  onDeleteCandidate?: (id: string, name: string) => void
   className?: string
 }
 
@@ -148,6 +148,7 @@ export function CandidateTable({
                     index={idx}
                     onSelectCandidate={onSelectCandidate}
                     onStatusChange={onStatusChange}
+                    onDeleteCandidate={onDeleteCandidate}
                   />
                 ))}
               </AnimatePresence>
@@ -184,11 +185,13 @@ function CandidateRow({
   index,
   onSelectCandidate,
   onStatusChange,
+  onDeleteCandidate,
 }: {
   candidate: Candidate
   index: number
   onSelectCandidate: (c: Candidate) => void
   onStatusChange: (id: string, status: CandidateStatus) => void
+  onDeleteCandidate?: (id: string, name: string) => void
 }) {
   const allSkills = safeArray(candidate?.topSkills)
   const visibleSkills = allSkills.slice(0, 4)
@@ -285,15 +288,17 @@ function CandidateRow({
             <Eye className="h-3.5 w-3.5 text-[#CC0000]" />
             View
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onDeleteCandidate(candidate.id, candidate.name)}
-            className="h-8 w-8 p-0 border border-white/[0.04] bg-white/[0.02] text-zinc-500 hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400 transition-colors cursor-pointer"
-            title="Delete Candidate Profile"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
+          {onDeleteCandidate && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDeleteCandidate?.(candidate.id, candidate.name)}
+              className="h-8 w-8 p-0 border border-white/[0.04] bg-white/[0.02] text-zinc-500 hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400 transition-colors cursor-pointer"
+              title="Delete Candidate Profile"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </div>
       </TableCell>
     </motion.tr>
@@ -315,7 +320,7 @@ function CandidateCardMobile({
   index: number
   onSelectCandidate: (c: Candidate) => void
   onStatusChange: (id: string, status: CandidateStatus) => void
-  onDeleteCandidate: (id: string, name: string) => void
+  onDeleteCandidate?: (id: string, name: string) => void
 }) {
   const visibleSkills = candidate.topSkills.slice(0, 4)
   const extraCount = candidate.topSkills.length - visibleSkills.length
@@ -386,15 +391,17 @@ function CandidateCardMobile({
             <Eye className="h-3.5 w-3.5 text-[#CC0000]" />
             View
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onDeleteCandidate(candidate.id, candidate.name)}
-            className="h-8 w-8 p-0 border border-white/[0.04] bg-white/[0.02] text-zinc-500 hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400 transition-colors"
-            title="Delete Candidate Profile"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
+          {onDeleteCandidate && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDeleteCandidate?.(candidate.id, candidate.name)}
+              className="h-8 w-8 p-0 border border-white/[0.04] bg-white/[0.02] text-zinc-500 hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+              title="Delete Candidate Profile"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </div>
       </div>
     </motion.div>
