@@ -17,6 +17,7 @@ import {
   XCircle,
   ThumbsUp,
   Building2,
+  Trash2,
 } from 'lucide-react'
 import {
   Sheet,
@@ -36,6 +37,7 @@ export interface CandidateDetailProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onStatusChange: (id: string, status: CandidateStatus) => void
+  onDeleteCandidate?: (id: string, name: string) => void
 }
 
 const STATUS_BUTTONS: {
@@ -137,6 +139,7 @@ export function CandidateDetail({
               key={candidate.id}
               candidate={candidate}
               onStatusChange={onStatusChange}
+              onDeleteCandidate={onDeleteCandidate}
             />
           )}
         </AnimatePresence>
@@ -148,9 +151,11 @@ export function CandidateDetail({
 function CandidateDetailBody({
   candidate,
   onStatusChange,
+  onDeleteCandidate,
 }: {
   candidate: Candidate
   onStatusChange: (id: string, status: CandidateStatus) => void
+  onDeleteCandidate?: (id: string, name: string) => void
 }) {
   const topSkills = useMemo(() => candidate.topSkills ?? [], [candidate.topSkills])
   const missingSkills = useMemo(() => candidate.missingSkills ?? [], [candidate.missingSkills])
@@ -248,6 +253,21 @@ function CandidateDetailBody({
             </div>
           </div>
         </div>
+
+        {onDeleteCandidate && (
+          <div className="mt-4 pt-3 border-t border-white/[0.04] flex justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onDeleteCandidate(candidate.id, candidate.name)}
+              className="h-8 gap-1.5 border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/40 text-[10px] uppercase font-mono tracking-wider font-bold transition-all cursor-pointer"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Delete Candidate Profile
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Scrollable body */}

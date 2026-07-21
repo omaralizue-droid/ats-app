@@ -32,7 +32,18 @@ import {
   Binary,
   Layers,
   Settings,
+  Trash2,
 } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog'
 
 /* ── Sample data ─────────────────────────────────────────────────────────── */
 
@@ -97,6 +108,9 @@ export default function Home() {
   // Custom stepper phase tracking
   const [analysisPhase, setAnalysisPhase] = useState(1)
 
+  // Candidate deletion state
+  const [candidateToDelete, setCandidateToDelete] = useState<{ id: string; name: string } | null>(null)
+
   const fetchCandidates = useCallback(async () => {
     setLoading(true)
     try {
@@ -114,6 +128,23 @@ export default function Home() {
   useEffect(() => {
     fetchCandidates()
   }, [fetchCandidates])
+
+  const handleDeleteCandidate = useCallback(async (id: string) => {
+    try {
+      const res = await fetch(`/api/candidates/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Failed to delete candidate')
+      setCandidates((prev) => prev.filter((c) => c.id !== id))
+      if (selectedCandidate?.id === id) {
+        setDetailOpen(false)
+        setSelectedCandidate(null)
+      }
+      toast({ title: 'Profile Deleted', description: 'Candidate profile removed successfully.' })
+    } catch {
+      toast({ title: 'Error', description: 'Could not delete candidate profile.', variant: 'destructive' })
+    } finally {
+      setCandidateToDelete(null)
+    }
+  }, [selectedCandidate?.id])
 
   // Stepper loop simulating steps for confidence building during processing
   useEffect(() => {
@@ -286,6 +317,7 @@ export default function Home() {
                     onFileUploaded={handleFileUploaded}
                     onSelectCandidate={handleSelectCandidate}
                     onStatusChange={handleStatusChange}
+                    onDeleteCandidate={(id, name) => setCandidateToDelete({ id, name })}
                     onNavigate={setActiveView}
                   />
                 )}
@@ -298,6 +330,7 @@ export default function Home() {
                     loading={loading}
                     onSelectCandidate={handleSelectCandidate}
                     onStatusChange={handleStatusChange}
+                    onDeleteCandidate={(id, name) => setCandidateToDelete({ id, name })}
                   />
                 )}
                 {activeView === 'analytics' && (
@@ -333,6 +366,7 @@ export default function Home() {
         open={detailOpen}
         onOpenChange={setDetailOpen}
         onStatusChange={handleStatusChange}
+        onDeleteCandidate={(id, name) => setCandidateToDelete({ id, name })}
       />
 
       {/* Stepper Processing Overlay */}
@@ -436,6 +470,31 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Delete Candidate Confirmation Modal */}
+      <AlertDialog open={!!candidateToDelete} onOpenChange={(open) => !open && setCandidateToDelete(null)}>
+        <AlertDialogContent className="bg-zinc-950/95 border border-white/10 text-white font-mono backdrop-blur-xl max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-500 text-sm font-bold uppercase tracking-wider">
+              <Trash2 className="h-4 w-4" /> Delete Candidate Profile
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400 text-xs mt-2 leading-relaxed">
+              Are you sure you want to delete <strong className="text-white font-bold">{candidateToDelete?.name}</strong>? This action cannot be undone and will permanently remove their analysis data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4 gap-2">
+            <AlertDialogCancel className="border-white/10 bg-white/[0.04] text-zinc-300 hover:bg-white/[0.08] hover:text-white text-[11px] uppercase font-bold cursor-pointer">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => candidateToDelete && handleDeleteCandidate(candidateToDelete.id)}
+              className="bg-red-600 hover:bg-red-700 text-white text-[11px] uppercase font-bold cursor-pointer border border-red-500/30 shadow-lg shadow-red-950/50"
+            >
+              Delete Profile
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
@@ -465,7 +524,7 @@ function Divider() {
 /* ── Dashboard view ──────────────────────────────────────────────────────── */
 function DashboardView({
   candidates, loading, jdText, onJdChange,
-  onFileUploaded, onSelectCandidate, onStatusChange, onNavigate,
+  onFileUploaded, onSelectCandidate, onStatusChange, onDeleteCandidate, onNavigate,
 }: {
   candidates: Candidate[]
   loading: boolean
@@ -474,6 +533,7 @@ function DashboardView({
   onFileUploaded: (data: { fileName: string; file: File }) => void
   onSelectCandidate: (c: Candidate) => void
   onStatusChange: (id: string, status: CandidateStatus) => void
+  onDeleteCandidate: (id: string, name: string) => void
   onNavigate: (v: string) => void
 }) {
   return (
@@ -535,6 +595,7 @@ function DashboardView({
             loading={loading}
             onSelectCandidate={onSelectCandidate}
             onStatusChange={onStatusChange}
+            onDeleteCandidate={onDeleteCandidate}
           />
         </div>
       </div>
@@ -582,11 +643,12 @@ function UploadView({ jdText, onJdChange, onFileUploaded }: {
 }
 
 /* ── Candidates view ─────────────────────────────────────────────────────── */
-function CandidatesView({ candidates, loading, onSelectCandidate, onStatusChange }: {
+function CandidatesView({ candidates, loading, onSelectCandidate, onStatusChange, onDeleteCandidate }: {
   candidates: Candidate[]
   loading: boolean
   onSelectCandidate: (c: Candidate) => void
   onStatusChange: (id: string, status: CandidateStatus) => void
+  onDeleteCandidate: (id: string, name: string) => void
 }) {
   return (
     <div className="flex flex-col gap-6">
@@ -604,6 +666,7 @@ function CandidatesView({ candidates, loading, onSelectCandidate, onStatusChange
             loading={loading}
             onSelectCandidate={onSelectCandidate}
             onStatusChange={onStatusChange}
+            onDeleteCandidate={onDeleteCandidate}
           />
         </div>
       </div>
