@@ -322,8 +322,9 @@ function CandidateCardMobile({
   onStatusChange: (id: string, status: CandidateStatus) => void
   onDeleteCandidate?: (id: string, name: string) => void
 }) {
-  const visibleSkills = candidate.topSkills.slice(0, 4)
-  const extraCount = candidate.topSkills.length - visibleSkills.length
+  const allSkills = safeArray(candidate?.topSkills)
+  const visibleSkills = allSkills.slice(0, 4)
+  const extraCount = allSkills.length - visibleSkills.length
 
   return (
     <motion.div

@@ -140,6 +140,7 @@ export function CandidateDetail({
   open,
   onOpenChange,
   onStatusChange,
+  onDeleteCandidate,
 }: CandidateDetailProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

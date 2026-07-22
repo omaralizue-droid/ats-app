@@ -83,9 +83,9 @@ const VALID_VERDICTS: Verdict[] = [
 ];
 
 function str(v: unknown, fallback = ''): string {
-  if (typeof v === 'string') return v;
-  if (v == null) return fallback;
-  return String(v);
+  if (typeof v === 'string' && v.trim().length > 0) return v.trim();
+  if (v == null || v === '') return fallback;
+  return String(v).trim() || fallback;
 }
 
 function nullableStr(v: unknown): string | null {
@@ -214,7 +214,22 @@ export async function analyzeResume(
         userId: process.env.ZAI_USER_ID || '',
       }) as ZAI;
     } else {
-      zai = await ZAI.create();
+      try {
+        zai = await ZAI.create();
+      } catch {
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        const configPath = path.join(process.cwd(), '.z-ai-config');
+        const raw = await fs.readFile(configPath, 'utf-8');
+        const config = JSON.parse(raw);
+        const ZAIClass = ZAI as any;
+        zai = new ZAIClass({
+          apiKey: config.apiKey,
+          baseUrl: config.baseUrl,
+          chatId: config.chatId || '',
+          userId: config.userId || '',
+        }) as ZAI;
+      }
     }
   } catch (err) {
     throw new Error(

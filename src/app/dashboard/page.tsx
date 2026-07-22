@@ -179,8 +179,8 @@ export default function Home() {
   }, [analyzing])
 
   const handleFileUploaded = useCallback(async (data: { fileName: string; file: File }) => {
-    if (jdText.trim().length < 60) {
-      toast({ title: 'Job description required', description: 'Paste a JD before uploading.', variant: 'destructive' })
+    if (jdText.trim().length < 10) {
+      toast({ title: 'Job description required', description: 'Paste a Job Description (at least 10 characters) before uploading.', variant: 'destructive' })
       return
     }
     setAnalyzing(true)
@@ -587,8 +587,8 @@ function DashboardView({
             subtitle="Drop pdf files to inspect requirements alignment"
           />
           <div className="mt-4">
-            <UploadZone onFileUploaded={onFileUploaded} disabled={jdText.trim().length < 60} />
-            {jdText.trim().length < 60 && (
+            <UploadZone onFileUploaded={onFileUploaded} disabled={jdText.trim().length < 10} />
+            {jdText.trim().length < 10 && (
               <p className="mt-2.5 flex items-center gap-2 text-[9px] text-amber-500/80 font-mono uppercase tracking-wider">
                 <FileSearch className="h-3.5 w-3.5" />
                 Specify Job Spec to unlock resume ingestion
@@ -666,8 +666,8 @@ function UploadView({
             subtitle="PDF, DOCX, or TXT — up to 10MB"
           />
           <div className="mt-4">
-            <UploadZone onFileUploaded={onFileUploaded} disabled={jdText.trim().length < 60} />
-            {jdText.trim().length < 60 && (
+            <UploadZone onFileUploaded={onFileUploaded} disabled={jdText.trim().length < 10} />
+            {jdText.trim().length < 10 && (
               <p className="mt-2.5 flex items-center gap-1.5 text-xs text-amber-500/90 font-medium font-mono uppercase">
                 <FileSearch className="h-3.5 w-3.5" />
                 A job description is required before uploading

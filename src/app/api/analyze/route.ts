@@ -27,9 +27,9 @@ export async function POST(req: NextRequest) {
     const file = formData.get('file');
     const jobDescription = formData.get('jobDescription');
 
-    if (!file || !(file instanceof File)) {
+    if (!file || typeof file !== 'object' || !('arrayBuffer' in file || 'text' in file || 'name' in file)) {
       return NextResponse.json(
-        { error: 'A resume file is required.' },
+        { error: 'A valid resume file (PDF, DOCX, or TXT) is required.' },
         { status: 400 },
       );
     }

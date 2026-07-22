@@ -43,13 +43,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const candidateName = body.candidate_name;
-    if (!candidateName || typeof candidateName !== 'string') {
-      return NextResponse.json(
-        { error: 'Missing required field: candidate_name' },
-        { status: 400 },
-      );
-    }
+    const candidateName = (body.candidate_name && String(body.candidate_name).trim()) || 'Candidate Profile';
     const contact = body.contact ?? { email: null, phone: null, linkedin: null };
     const experience = body.experience_summary ?? { total_years: 0, latest_role: '', latest_company: '' };
     const ats = body.ats_evaluation ?? {
@@ -57,18 +51,12 @@ export async function POST(req: NextRequest) {
       verdict: 'Potential Review' as const,
       key_strengths: [],
       missing_skills_or_gaps: [],
-      brief_summary: '',
+      brief_summary: 'Candidate evaluation completed.',
     };
 
     const matchScore = typeof ats.match_score === 'number'
       ? Math.max(0, Math.min(100, Math.round(ats.match_score)))
-      : null;
-    if (matchScore === null) {
-      return NextResponse.json(
-        { error: 'ats_evaluation.match_score must be a number between 0 and 100.' },
-        { status: 400 },
-      );
-    }
+      : 50;
 
     if (!body.fileName || typeof body.fileName !== 'string') {
       return NextResponse.json(
@@ -82,12 +70,8 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-    if (!ats.brief_summary || typeof ats.brief_summary !== 'string') {
-      return NextResponse.json(
-        { error: 'Missing required field: ats_evaluation.brief_summary' },
-        { status: 400 },
-      );
-    }
+    const briefSummary = (ats.brief_summary && String(ats.brief_summary).trim()) || 'Candidate evaluation completed.';
+
 
     // Normalize arrays with safe fallbacks.
     const topSkills = Array.isArray(body.top_skills) ? body.top_skills.slice(0, 10) : [];
@@ -138,7 +122,7 @@ export async function POST(req: NextRequest) {
             : null,
         keyStrengths: JSON.stringify(keyStrengths),
         missingSkills: JSON.stringify(missingSkills),
-        briefSummary: String(ats.brief_summary),
+        briefSummary: String(briefSummary),
         jdText: String(body.jdText),
         rawText:
           typeof body.rawText === 'string' && body.rawText ? body.rawText : null,
