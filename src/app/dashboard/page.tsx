@@ -271,10 +271,10 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#03030c] text-[#f8fafc] relative overflow-hidden">
-      {/* Ambient 3D Storm Background Scene (Subtle 20% opacity for maximum UI readability) */}
-      <div className="fixed inset-0 z-0 h-screen w-screen opacity-20 pointer-events-none">
-        <StormScene overlayOpacity={0.85} />
+    <div className="flex min-h-screen flex-col bg-[#090b14] text-[#f8fafc] relative overflow-hidden">
+      {/* Ambient 3D Storm Background Scene (Ultra-subtle 6% opacity for 100% UI readability) */}
+      <div className="fixed inset-0 z-0 h-screen w-screen opacity-[0.06] pointer-events-none">
+        <StormScene overlayOpacity={0.9} />
       </div>
 
       <div className="flex flex-col md:flex-row flex-1 relative z-10">
@@ -297,23 +297,23 @@ export default function Home() {
                     Ingest Node
                   </span>
                 </div>
-                <p className="text-xs text-zinc-550">{viewSubtitle[activeView]}</p>
+                <p className="text-xs text-zinc-300 font-medium">{viewSubtitle[activeView]}</p>
               </div>
 
               <div className="flex items-center gap-2 font-mono">
                 <button
                   onClick={handleLoadSampleJD}
-                  className="flex items-center gap-1.5 rounded border border-white/[0.04] bg-white/[0.01] px-3.5 py-1.5 text-[10px] uppercase font-bold tracking-wider text-zinc-400 transition-all hover:bg-white/[0.03] hover:text-white cursor-pointer"
+                  className="flex items-center gap-1.5 rounded border border-white/15 bg-white/5 px-3.5 py-1.5 text-[10px] uppercase font-bold tracking-wider text-zinc-200 transition-all hover:bg-white/10 hover:text-white cursor-pointer shadow-sm"
                 >
-                  <Wand2 className="h-3.5 w-3.5 opacity-60 text-blue-400" />
+                  <Wand2 className="h-3.5 w-3.5 text-blue-400" />
                   Load Sample JD
                 </button>
                 <button
                   onClick={fetchCandidates}
                   disabled={loading}
-                  className="flex items-center gap-1.5 rounded border border-white/[0.04] bg-white/[0.01] px-3.5 py-1.5 text-[10px] uppercase font-bold tracking-wider text-zinc-400 transition-all hover:bg-white/[0.03] hover:text-white disabled:opacity-40 cursor-pointer"
+                  className="flex items-center gap-1.5 rounded border border-white/15 bg-white/5 px-3.5 py-1.5 text-[10px] uppercase font-bold tracking-wider text-zinc-200 transition-all hover:bg-white/10 hover:text-white disabled:opacity-40 cursor-pointer shadow-sm"
                 >
-                  <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''} opacity-60 text-blue-400`} />
+                  <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''} text-blue-400`} />
                   Refresh
                 </button>
               </div>
@@ -542,13 +542,13 @@ function SectionHeader({ icon, title, subtitle }: { icon: React.ReactNode; title
   return (
     <div className="flex items-center gap-3">
       <div
-        className="flex h-8 w-8 items-center justify-center rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 shadow-inner"
+        className="flex h-8 w-8 items-center justify-center rounded bg-blue-500/20 border border-blue-500/30 text-blue-300 shadow-inner"
       >
         {icon}
       </div>
       <div className="font-mono">
         <h2 className="text-xs font-bold uppercase tracking-wider text-white">{title}</h2>
-        <p className="text-[9px] text-zinc-550 mt-0.5">{subtitle}</p>
+        <p className="text-[10px] text-zinc-300 font-medium mt-0.5">{subtitle}</p>
       </div>
     </div>
   )

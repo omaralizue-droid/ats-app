@@ -94,7 +94,7 @@ function SidebarContent({
 
       {/* Nav */}
       <nav className="custom-scroll flex-1 overflow-y-auto px-3 py-5">
-        <p className="mb-3 px-2 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-500 font-mono">
+        <p className="mb-3 px-2 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-300 font-mono">
           Workspace
         </p>
         <ul className="flex flex-col gap-1.5">
@@ -108,19 +108,19 @@ function SidebarContent({
                   className={cn(
                     'group relative flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer',
                     isActive
-                      ? 'bg-white/[0.04] text-white border border-white/[0.05] shadow-lg shadow-black/20'
-                      : 'text-zinc-400 hover:bg-white/[0.02] hover:text-zinc-200 border border-transparent',
+                      ? 'bg-blue-500/20 text-white border border-blue-500/30 shadow-lg shadow-black/40'
+                      : 'text-zinc-300 hover:bg-white/10 hover:text-white border border-transparent',
                   )}
                 >
                   <Icon
                     className={cn(
                       'h-4 w-4 shrink-0 transition-colors',
-                      isActive ? 'text-[#CC0000]' : 'text-zinc-500 group-hover:text-zinc-400',
+                      isActive ? 'text-blue-400' : 'text-zinc-400 group-hover:text-zinc-200',
                     )}
                   />
                   <span className="flex-1 text-left">{item.label}</span>
                   {isActive && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#CC0000]" style={{ boxShadow: '0 0 8px #CC0000' }} />
+                    <span className="h-1.5 w-1.5 rounded-full bg-blue-400" style={{ boxShadow: '0 0 8px #60a5fa' }} />
                   )}
                 </button>
               </li>
@@ -129,8 +129,8 @@ function SidebarContent({
         </ul>
       </nav>
 
-      <div className="border-t border-white/[0.03] p-4 bg-white/[0.01]">
-        <p className="mb-3 px-1 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-500 font-mono">
+      <div className="border-t border-white/10 p-4 bg-white/5">
+        <p className="mb-3 px-1 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-300 font-mono">
           Pipeline
         </p>
         <div className="grid grid-cols-2 gap-2 font-mono">
@@ -152,7 +152,7 @@ function Logo() {
         src="/zue-logo.png"
         alt="Zue Group of Companies"
         className="h-8 w-auto object-contain"
-        style={{ filter: 'brightness(1.05)' }}
+        style={{ filter: 'brightness(1.1)' }}
       />
     </div>
   )
@@ -169,9 +169,9 @@ function MiniStatCard({
 }) {
   return (
     <div
-      className="flex flex-col gap-1.5 rounded-lg bg-zinc-950/60 border border-white/[0.03] px-2.5 py-2"
+      className="flex flex-col gap-1.5 rounded-lg bg-[#141829] border border-white/10 px-2.5 py-2 shadow-sm"
     >
-      <div className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-wider text-zinc-550">
+      <div className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-wider text-zinc-300">
         <span style={{ color }}>{icon}</span>
         {label}
       </div>

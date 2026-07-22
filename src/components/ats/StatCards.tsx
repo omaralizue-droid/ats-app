@@ -121,7 +121,7 @@ function StatCard({ stat, index, max }: { stat: StatDef; index: number; max: num
     >
       <div className="relative flex items-start justify-between gap-2">
         <div className="flex min-w-0 flex-col">
-          <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-550 sm:text-[10px] font-mono">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-200 sm:text-[11px] font-mono">
             {stat.label}
           </span>
           <div className="mt-2 flex items-baseline gap-1 font-mono">

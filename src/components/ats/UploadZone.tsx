@@ -217,7 +217,7 @@ export function UploadZone({ onFileUploaded, disabled = false, className }: Uplo
                 <p className="text-xs font-bold uppercase tracking-wider text-white">
                   Stage a Resume
                 </p>
-                <p className="text-[10px] text-zinc-500">
+                <p className="text-[11px] text-zinc-300 font-medium">
                   Drag &amp; drop or click to browse · {ACCEPTED_LABELS.join(' · ')}
                 </p>
               </motion.div>
@@ -231,7 +231,7 @@ export function UploadZone({ onFileUploaded, disabled = false, className }: Uplo
                 className="flex flex-col items-center gap-1"
               >
                 <p className="text-xs font-bold uppercase tracking-wider text-[#00f0ff]">Release to ingest</p>
-                <p className="text-[10px] text-[#00f0ff]/60">Analysis will run automatically</p>
+                <p className="text-[10px] text-[#00f0ff]">Analysis will run automatically</p>
               </motion.div>
             )}
             {(state === 'uploading' || state === 'done') && (
@@ -242,11 +242,11 @@ export function UploadZone({ onFileUploaded, disabled = false, className }: Uplo
                 exit={{ opacity: 0, y: -4 }}
                 className="flex flex-col items-center gap-1"
               >
-                <p className="flex items-center gap-2 text-xs font-semibold text-zinc-300">
+                <p className="flex items-center gap-2 text-xs font-semibold text-zinc-200">
                   <FileText className="h-3.5 w-3.5 text-[#00f0ff]" />
                   <span className="max-w-[200px] truncate">{fileName}</span>
                 </p>
-                <p className="text-[10px] text-zinc-500">
+                <p className="text-[10px] text-zinc-300 font-medium">
                   {state === 'uploading' ? 'Parsing bytes…' : 'Screening requirements…'}
                 </p>
               </motion.div>
@@ -263,7 +263,7 @@ export function UploadZone({ onFileUploaded, disabled = false, className }: Uplo
               exit={{ opacity: 0, height: 0 }}
               className="w-full max-w-[200px] font-mono"
             >
-              <div className="relative h-1 w-full overflow-hidden rounded bg-zinc-950 border border-white/[0.02]">
+              <div className="relative h-1.5 w-full overflow-hidden rounded bg-zinc-900 border border-white/10">
                 <motion.div
                   className="absolute inset-y-0 left-0 bg-[#00f0ff]"
                   animate={{ width: `${progress}%` }}
@@ -271,7 +271,7 @@ export function UploadZone({ onFileUploaded, disabled = false, className }: Uplo
                   style={{ boxShadow: '0 0 8px #00f0ff' }}
                 />
               </div>
-              <div className="mt-1 flex items-center justify-between text-[9px] text-zinc-650">
+              <div className="mt-1 flex items-center justify-between text-[10px] text-zinc-300 font-bold">
                 <span>{progress}%</span>
                 <span>~0.8s</span>
               </div>
@@ -286,14 +286,14 @@ export function UploadZone({ onFileUploaded, disabled = false, className }: Uplo
               type="button"
               variant="outline"
               size="sm"
-              className="border-white/[0.04] bg-white/[0.02] text-zinc-350 hover:bg-white/[0.04] hover:text-white text-[10px] uppercase font-mono tracking-wider"
+              className="border-white/15 bg-white/5 text-zinc-200 hover:bg-white/10 hover:text-white text-[10px] uppercase font-mono tracking-wider font-bold shadow-sm"
               onClick={(e) => {
                 e.stopPropagation()
                 inputRef.current?.click()
               }}
               disabled={disabled}
             >
-              <UploadCloud className="h-3.5 w-3.5" />
+              <UploadCloud className="h-3.5 w-3.5 text-blue-400" />
               Browse files
             </Button>
           </div>
@@ -305,7 +305,7 @@ export function UploadZone({ onFileUploaded, disabled = false, className }: Uplo
             type="button"
             variant="ghost"
             size="sm"
-            className="absolute right-2 top-2 h-6 w-6 p-0 text-zinc-500 hover:text-zinc-200"
+            className="absolute right-2 top-2 h-6 w-6 p-0 text-zinc-400 hover:text-white"
             onClick={(e) => {
               e.stopPropagation()
               setState('idle')
@@ -323,12 +323,12 @@ export function UploadZone({ onFileUploaded, disabled = false, className }: Uplo
             {ACCEPTED_LABELS.map((label) => (
               <span
                 key={label}
-                className="rounded border border-white/[0.03] bg-white/[0.01] px-1 py-0.5 text-[8px] font-bold text-zinc-500"
+                className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[9px] font-bold text-zinc-300"
               >
                 {label}
               </span>
             ))}
-            <span className="text-[8px] text-zinc-650">· Max 10MB</span>
+            <span className="text-[9px] text-zinc-400 font-bold">· Max 10MB</span>
           </div>
         )}
       </motion.div>

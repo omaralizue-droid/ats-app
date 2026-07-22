@@ -52,7 +52,7 @@ export function JobDescriptionInput({
             >
               Job Spec
             </label>
-            <span className="text-[9px] text-zinc-550">
+            <span className="text-[10px] text-zinc-300 font-medium">
               Paste role details for model match
             </span>
           </div>
@@ -66,11 +66,11 @@ export function JobDescriptionInput({
               initial={{ opacity: 0, scale: 0.85 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.85 }}
-              className="flex items-center gap-1.5 rounded border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5"
-              style={{ boxShadow: '0 0 10px rgba(16, 185, 129, 0.1)' }}
+              className="flex items-center gap-1.5 rounded border border-emerald-500/30 bg-emerald-500/20 px-2.5 py-1"
+              style={{ boxShadow: '0 0 10px rgba(16, 185, 129, 0.2)' }}
             >
-              <CheckCircle2 className="h-3 w-3 text-emerald-400" />
-              <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider">Ingest Ready</span>
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+              <span className="text-[9px] font-bold text-emerald-300 uppercase tracking-wider">Ingest Ready</span>
             </motion.div>
           ) : (
             <motion.div
@@ -78,10 +78,10 @@ export function JobDescriptionInput({
               initial={{ opacity: 0, scale: 0.85 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.85 }}
-              className="flex items-center gap-1.5 rounded border border-white/[0.04] bg-white/[0.01] px-2 py-0.5"
+              className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-2.5 py-1"
             >
-              <FileText className="h-3 w-3 text-zinc-600" />
-              <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-wider">Empty Spec</span>
+              <FileText className="h-3.5 w-3.5 text-zinc-400" />
+              <span className="text-[9px] font-bold text-zinc-300 uppercase tracking-wider">Empty Spec</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -95,10 +95,10 @@ export function JobDescriptionInput({
           onChange={(e) => onChange(e.target.value)}
           placeholder="Paste requirements spec..."
           className={cn(
-            'custom-scroll min-h-[200px] resize-y rounded border border-white/[0.04] bg-zinc-950/40 px-4 py-3 text-xs leading-relaxed text-zinc-300 font-mono transition-colors',
-            'placeholder:text-zinc-650',
-            'focus-visible:border-[#00f0ff]/30 focus-visible:ring-[#00f0ff]/10',
-            isReady && 'border-emerald-500/10 bg-zinc-950/20',
+            'custom-scroll min-h-[200px] resize-y rounded border border-white/15 bg-[#0f1222]/90 px-4 py-3 text-xs leading-relaxed text-zinc-100 font-mono transition-colors shadow-inner',
+            'placeholder:text-zinc-400',
+            'focus-visible:border-blue-400 focus-visible:ring-blue-400/20',
+            isReady && 'border-emerald-500/30 bg-[#0f1526]/95',
           )}
         />
         {/* Clear button */}
@@ -115,7 +115,7 @@ export function JobDescriptionInput({
                 variant="ghost"
                 size="sm"
                 onClick={handleClear}
-                className="h-6 gap-1 px-2 text-[9px] text-zinc-500 hover:text-zinc-200 border border-white/[0.03] bg-zinc-950/50 uppercase tracking-wider"
+                className="h-6 gap-1 px-2 text-[9px] text-zinc-300 hover:text-white border border-white/10 bg-zinc-900/80 uppercase tracking-wider"
                 aria-label="Clear job description"
               >
                 <X className="h-3 w-3" />
@@ -127,14 +127,14 @@ export function JobDescriptionInput({
       </div>
 
       {/* Footer: char count + hint */}
-      <div className="mt-3 flex items-center justify-between text-[9px] text-zinc-550 font-mono">
+      <div className="mt-3 flex items-center justify-between text-[10px] text-zinc-300 font-mono font-medium">
         <span>
           {charCount === 0
             ? 'Tip: Paste full requirements.'
             : `${charCount.toLocaleString()} chars`}
         </span>
         {charCount > 0 && charCount < minLength && (
-          <span className="text-amber-500/90 font-medium">
+          <span className="text-amber-400 font-bold">
             {minLength - charCount} more characters to unlock
           </span>
         )}

@@ -121,20 +121,20 @@ export function CandidateTable({
         <div className="custom-scroll overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-white/[0.03] hover:bg-transparent bg-white/[0.01]">
-                <TableHead className="px-4 py-3 text-[9px] font-bold uppercase tracking-wider text-zinc-500 font-mono">
+              <TableRow className="border-white/10 hover:bg-transparent bg-white/5">
+                <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-zinc-200 font-mono">
                   Candidate
                 </TableHead>
-                <TableHead className="px-4 py-3 text-[9px] font-bold uppercase tracking-wider text-zinc-500 font-mono">
+                <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-zinc-200 font-mono">
                   Match
                 </TableHead>
-                <TableHead className="px-4 py-3 text-[9px] font-bold uppercase tracking-wider text-zinc-500 font-mono">
+                <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-zinc-200 font-mono">
                   Skills
                 </TableHead>
-                <TableHead className="px-4 py-3 text-[9px] font-bold uppercase tracking-wider text-zinc-500 font-mono">
+                <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-zinc-200 font-mono">
                   Status
                 </TableHead>
-                <TableHead className="px-4 py-3 text-right text-[9px] font-bold uppercase tracking-wider text-zinc-500 font-mono">
+                <TableHead className="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-wider text-zinc-200 font-mono">
                   Actions
                 </TableHead>
               </TableRow>
@@ -228,13 +228,13 @@ function CandidateRow({
             <span className="text-xs font-bold text-zinc-200 group-hover:text-blue-400 transition-colors uppercase tracking-wider font-mono">
               {candidate.name}
             </span>
-            <span className="flex items-center gap-1.5 text-[10px] text-zinc-500">
-              <Mail className="h-3.5 w-3.5 opacity-40" />
+            <span className="flex items-center gap-1.5 text-[10px] text-zinc-300 font-medium">
+              <Mail className="h-3.5 w-3.5 text-zinc-400 opacity-80" />
               <span className="max-w-[200px] truncate font-mono">{candidate.email}</span>
             </span>
             {candidate.latestRole && (
-              <span className="flex items-center gap-1.5 text-[10px] text-zinc-550 mt-0.5">
-                <Briefcase className="h-3.5 w-3.5 opacity-40" />
+              <span className="flex items-center gap-1.5 text-[10px] text-zinc-300 font-medium mt-0.5">
+                <Briefcase className="h-3.5 w-3.5 text-zinc-400 opacity-80" />
                 <span className="max-w-[200px] truncate font-mono">
                   {candidate.latestRole}
                   {candidate.latestCompany ? ` · ${candidate.latestCompany}` : ''}
@@ -254,13 +254,13 @@ function CandidateRow({
           {visibleSkills.map((s) => (
             <span
               key={s}
-              className="rounded bg-white/[0.01] border border-white/[0.03] px-1.5 py-0.5 text-[9px] font-bold text-zinc-400 uppercase"
+              className="rounded bg-blue-500/15 border border-blue-500/30 px-1.5 py-0.5 text-[9px] font-bold text-blue-300 uppercase"
             >
               {s}
             </span>
           ))}
           {extraCount > 0 && (
-            <span className="rounded bg-white/[0.02] border border-white/[0.04] px-1 py-0.5 text-[8px] font-bold text-zinc-600">
+            <span className="rounded bg-white/10 border border-white/15 px-1 py-0.5 text-[8px] font-bold text-zinc-300">
               +{extraCount}
             </span>
           )}
