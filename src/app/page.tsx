@@ -15,7 +15,7 @@ import {
   Sparkles,
   Zap,
 } from 'lucide-react'
-import CinematicScene from '@/components/three/CinematicScene'
+import StormScene from '@/components/three/StormScene'
 
 // Simulated score badge for the mockup preview
 function PreviewScoreBadge({ score }: { score: number }) {
@@ -116,12 +116,10 @@ export default function LandingPage() {
         />
       )}
 
-      {/* 3D WebGL Background Scene (Desktop only to prevent lag on mobile) */}
-      {isDesktop && (
-        <div className="fixed inset-0 z-0 h-screen w-screen overflow-hidden opacity-30 pointer-events-none">
-          <CinematicScene isMobile={true} />
-        </div>
-      )}
+      {/* 3D WebGL Storm Background Scene */}
+      <div className="fixed inset-0 z-0 h-screen w-screen overflow-hidden opacity-90 pointer-events-none">
+        <StormScene overlayOpacity={0.35} />
+      </div>
 
       {/* Global Glass Navigation */}
       <nav className="fixed top-0 z-50 w-full border-b border-white/[0.03] bg-zinc-950/20 backdrop-blur-xl">

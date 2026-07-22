@@ -14,7 +14,7 @@ import type { SidebarStats } from '@/components/ats'
 import { toast } from '@/hooks/use-toast'
 import type { Candidate, CandidateStatus } from '@/lib/types'
 import { cn } from '@/lib/utils'
-import ThreeCanvas from '@/components/three/ThreeCanvas'
+import StormScene from '@/components/three/StormScene'
 import {
   RefreshCw,
   Sparkles,
@@ -272,9 +272,9 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#03030c] text-[#f8fafc] relative overflow-hidden">
-      {/* Ambient background particles */}
-      <div className="fixed inset-0 z-0 h-screen w-screen opacity-20 pointer-events-none">
-        <ThreeCanvas particleCount={60} variant="sparse" />
+      {/* Ambient 3D Storm Background Scene */}
+      <div className="fixed inset-0 z-0 h-screen w-screen opacity-70 pointer-events-none">
+        <StormScene overlayOpacity={0.5} />
       </div>
 
       <div className="flex flex-col md:flex-row flex-1 relative z-10">
