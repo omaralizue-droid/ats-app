@@ -272,9 +272,9 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#03030c] text-[#f8fafc] relative overflow-hidden">
-      {/* Ambient 3D Storm Background Scene */}
-      <div className="fixed inset-0 z-0 h-screen w-screen opacity-70 pointer-events-none">
-        <StormScene overlayOpacity={0.5} />
+      {/* Ambient 3D Storm Background Scene (Subtle 20% opacity for maximum UI readability) */}
+      <div className="fixed inset-0 z-0 h-screen w-screen opacity-20 pointer-events-none">
+        <StormScene overlayOpacity={0.85} />
       </div>
 
       <div className="flex flex-col md:flex-row flex-1 relative z-10">
